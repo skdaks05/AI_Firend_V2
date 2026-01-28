@@ -125,6 +125,20 @@ The server watches `.serena/memories/` using chokidar with debounce (100ms). Onl
 ### Progressive Disclosure
 Antigravity automatically matches requests to skills. You never manually select a skill. Only the needed skill loads into context.
 
+### Token-Optimized Skill Design
+Each skill uses a two-layer architecture for maximum token efficiency:
+- **SKILL.md** (~40 lines): Identity, routing, core rules — loaded immediately
+- **resources/**: Execution protocols, examples, checklists, error playbooks — loaded on-demand
+
+Shared resources live in `_shared/` (not a skill) and are referenced by all agents:
+- Chain-of-thought execution protocols with 4-step workflow
+- Few-shot input/output examples for mid-tier model guidance
+- Error recovery playbooks with "3 strikes" escalation
+- Reasoning templates for structured multi-step analysis
+- Context budget management for Flash/Pro model tiers
+- Automated verification via `verify.sh`
+- Cross-session lessons learned accumulation
+
 ### Agent Manager UI
 Mission Control dashboard in Antigravity IDE. Spawn agents, assign workspaces, monitor via inbox, review artifacts.
 

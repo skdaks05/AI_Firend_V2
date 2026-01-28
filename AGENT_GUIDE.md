@@ -60,9 +60,17 @@ cd /path/to/user-project
 mkdir -p .agent/skills
 ```
 
-Copy each skill individually (this prevents overwriting):
+Copy shared resources and each skill individually (this prevents overwriting):
 ```bash
 REPO="/tmp/subagent-orchestrator"  # temp clone location
+
+# Copy shared resources first (required by all skills)
+if [ -d ".agent/skills/_shared" ]; then
+  echo "⚠️  _shared/ already exists. Keeping existing."
+else
+  cp -r "$REPO/.agent/skills/_shared" ".agent/skills/_shared"
+  echo "✅ Copied _shared/ (common resources)"
+fi
 
 # Copy 8 core skills
 for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator; do
@@ -78,7 +86,7 @@ done
 **Verification:**
 ```bash
 ls -1 .agent/skills/
-# Should show: backend-agent, debug-agent, frontend-agent, mobile-agent,
+# Should show: _shared, backend-agent, debug-agent, frontend-agent, mobile-agent,
 #              orchestrator, pm-agent, qa-agent, workflow-guide
 ```
 
@@ -180,13 +188,15 @@ test -f ./scripts/dashboard.sh && test -d ./scripts/dashboard-web && echo "✅ D
 
 ## Step 6: Verify Integration
 
-**6.1 Check skills are in place:**
+**6.1 Check skills and shared resources are in place:**
 ```bash
 find .agent/skills -name "SKILL.md" | wc -l
 # Should show: 8
+
+test -d .agent/skills/_shared && echo "✅ _shared/ exists" || echo "⚠️  _shared/ missing"
 ```
 
-If not 8, inform user which skills are missing.
+If not 8 skills or `_shared/` is missing, inform user which parts are missing.
 
 **6.2 Check .gitignore doesn't hide skills:**
 ```bash
@@ -312,7 +322,9 @@ git check-ignore .agent/skills/backend-agent/SKILL.md  # should be blank
 
 Integration is complete when:
 
+- ✅ `_shared/` common resources exist in `.agent/skills/_shared/`
 - ✅ All 8 skills exist in `.agent/skills/`
+- ✅ Each skill has `SKILL.md` and `resources/` directory
 - ✅ `.serena/memories/` directory created with `.gitkeep`
 - ✅ `.gitignore` includes Serena Memory rules
 - ✅ `package.json` has `dashboard` and `dashboard:web` scripts (if dashboards enabled)
@@ -335,6 +347,11 @@ What's next:
 3. To monitor CLI execution, run: npm run dashboard:web
 4. Edit .agent/skills/*/SKILL.md to customize for your tech stack
 5. See README.md for detailed usage and troubleshooting
+
+Skill Architecture:
+- Each skill: SKILL.md (~40 lines) + resources/ (on-demand)
+- _shared/: Common resources (reasoning templates, verify.sh, lessons-learned, etc.)
+- ~75% token savings vs monolithic SKILL.md files
 
 Documentation:
 - README.md: Project overview

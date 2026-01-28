@@ -181,17 +181,35 @@ Features:
 .
 ├── .agent/
 │   └── skills/
-│       ├── workflow-guide/         # Multi-agent coordination
-│       ├── pm-agent/               # Product manager
-│       ├── frontend-agent/         # React/Next.js
-│       ├── backend-agent/          # FastAPI
-│       ├── mobile-agent/           # Flutter
-│       ├── qa-agent/               # Security & QA
-│       ├── debug-agent/            # Bug fixing
-│       └── orchestrator/           # CLI-based sub-agent spawner
-│           ├── scripts/
-│           ├── config/cli-config.yaml
-│           └── templates/
+│       ├── _shared/                    # Common resources (not a skill)
+│       │   ├── serena-memory-protocol.md
+│       │   ├── common-checklist.md
+│       │   ├── skill-routing.md
+│       │   ├── context-loading.md
+│       │   ├── context-budget.md
+│       │   ├── reasoning-templates.md
+│       │   ├── clarification-protocol.md
+│       │   ├── difficulty-guide.md
+│       │   ├── lessons-learned.md
+│       │   ├── verify.sh
+│       │   └── api-contracts/
+│       ├── workflow-guide/             # Multi-agent coordination
+│       ├── pm-agent/                   # Product manager
+│       ├── frontend-agent/             # React/Next.js
+│       ├── backend-agent/              # FastAPI
+│       ├── mobile-agent/               # Flutter
+│       ├── qa-agent/                   # Security & QA
+│       ├── debug-agent/                # Bug fixing
+│       └── orchestrator/               # CLI-based sub-agent spawner
+│       # Each skill has:
+│       #   SKILL.md              (~40 lines, token-optimized)
+│       #   resources/
+│       #     ├── execution-protocol.md  (chain-of-thought steps)
+│       #     ├── examples.md            (few-shot input/output)
+│       #     ├── checklist.md           (self-verification)
+│       #     ├── error-playbook.md      (failure recovery)
+│       #     ├── tech-stack.md          (detailed tech specs)
+│       #     └── snippets.md           (copy-paste patterns)
 ├── .serena/
 │   └── memories/                   # Runtime state (gitignored)
 ├── scripts/
@@ -206,6 +224,46 @@ Features:
 ├── README-ko.md                    # Korean guide
 └── USAGE.md                        # Detailed usage guide
 ```
+
+## Skill Architecture
+
+Each skill uses a **token-optimized two-layer design**:
+
+- **SKILL.md** (~40 lines): Loaded immediately by Antigravity. Contains only identity, routing conditions, and core rules.
+- **resources/**: Loaded on-demand. Contains execution protocols, few-shot examples, checklists, error playbooks, code snippets, and tech stack details.
+
+This achieves **~75% token savings** on initial skill loading (3-7KB → ~800B per skill).
+
+### Shared Resources (`_shared/`)
+
+Common resources deduplicated across all skills:
+
+| Resource | Purpose |
+|----------|---------|
+| `reasoning-templates.md` | Structured fill-in-the-blank templates for multi-step reasoning |
+| `clarification-protocol.md` | When to ask vs. assume, ambiguity levels |
+| `context-budget.md` | Token-efficient file reading strategies per model tier |
+| `context-loading.md` | Task-type to resource mapping for orchestrator prompt construction |
+| `skill-routing.md` | Keyword-to-skill mapping and parallel execution rules |
+| `difficulty-guide.md` | Simple/Medium/Complex assessment with protocol branching |
+| `lessons-learned.md` | Cross-session accumulated domain gotchas |
+| `verify.sh` | Automated verification script run after agent completion |
+| `api-contracts/` | PM creates contracts, backend implements, frontend/mobile consumes |
+| `serena-memory-protocol.md` | CLI mode memory read/write protocol |
+| `common-checklist.md` | Universal code quality checks |
+
+### Per-Skill Resources
+
+Each skill provides domain-specific resources:
+
+| Resource | Purpose |
+|----------|---------|
+| `execution-protocol.md` | 4-step chain-of-thought workflow (Analyze → Plan → Implement → Verify) |
+| `examples.md` | 2-3 few-shot input/output examples |
+| `checklist.md` | Domain-specific self-verification checklist |
+| `error-playbook.md` | Failure recovery with "3 strikes" escalation rule |
+| `tech-stack.md` | Detailed technology specifications |
+| `snippets.md` | Copy-paste ready code patterns |
 
 ## Skills Overview
 

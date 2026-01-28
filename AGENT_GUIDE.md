@@ -2,6 +2,24 @@
 
 **This guide is for developers** integrating Antigravity Multi-Agent Skills into an existing project.
 
+### ✅ Compatibility & Safety
+
+This integration is **safe and non-destructive** if you follow these steps:
+
+**Your existing tools remain intact:**
+- ✅ **Already using Serena?** → ✨ No conflicts! Serena (MCP) and our Skills work independently
+  - Serena: Code analysis, refactoring, symbols → uses Serena protocol
+  - Our Skills: Multi-agent orchestration → uses Antigravity Skills API
+  - Different systems, zero interference
+- ✅ **Already have other skills?** → They coexist peacefully in `.agent/skills/`
+- ✅ **Custom `.gitignore`?** → We show you how to safely merge
+- ✅ **Custom `package.json`?** → We show you how to safely merge
+
+**Key principle**:
+- We copy files **INTO** your project; we never overwrite existing files if done correctly
+- Always backup your project before starting
+- Use the safe copy method (copy individual skills, not entire `.agent/skills/` directory)
+
 ---
 
 ## Quick Integration
@@ -14,23 +32,95 @@ git clone https://github.com/gahyun-git/subagent-orchestrator.git
 cd subagent-orchestrator
 ```
 
-### Step 2: Copy Skills to Your Project
+### Step 2: Backup Your Project (Recommended)
+
+```bash
+cd /path/to/your-project
+git commit -am "backup: before integrating multi-agent skills"
+# or just create a backup branch
+git checkout -b backup/before-integration
+git checkout -
+```
+
+### Step 3: Copy Skills to Your Project (Safe Method)
 
 ```bash
 # Navigate to your existing Antigravity project
 cd /path/to/your-project
 
-# Option A: Copy all skills
-cp -r /tmp/subagent-orchestrator/.agent/skills .agent/
+# Ensure .agent/skills directory exists
+mkdir -p .agent/skills
 
-# Option B: Copy specific skills
+# Option A: Copy specific skills (SAFER - doesn't overwrite existing)
 cp -r /tmp/subagent-orchestrator/.agent/skills/backend-agent .agent/skills/
 cp -r /tmp/subagent-orchestrator/.agent/skills/frontend-agent .agent/skills/
+cp -r /tmp/subagent-orchestrator/.agent/skills/qa-agent .agent/skills/
 cp -r /tmp/subagent-orchestrator/.agent/skills/debug-agent .agent/skills/
-# ... add more as needed
+# ... add more as needed. Existing skills are NOT overwritten.
+
+# Option B: Copy all skills at once
+# ⚠️ ONLY if you don't have existing skills with the same names
+for skill in /tmp/subagent-orchestrator/.agent/skills/*/; do
+  skillname=$(basename "$skill")
+  if [ ! -d ".agent/skills/$skillname" ]; then
+    cp -r "$skill" .agent/skills/
+  else
+    echo "Skipping $skillname - already exists in your project"
+  fi
+done
 ```
 
-### Step 3: Open in Antigravity
+### Step 4: Merge Configuration Files
+
+**Update `.gitignore`:**
+```bash
+# Add these lines to your .gitignore if not already present:
+cat >> .gitignore << 'EOF'
+
+# Serena Memory (runtime orchestrator state)
+.serena/memories/*
+!.serena/memories/.gitkeep
+EOF
+```
+
+**Merge `package.json` (if using dashboards):**
+```bash
+# Option 1: Manual - Edit package.json and add:
+{
+  "dependencies": {
+    "chokidar": "^4.0.0",
+    "ws": "^8.18.0"
+  }
+}
+
+# Option 2: npm command
+npm install chokidar@^4.0.0 ws@^8.18.0
+```
+
+### Step 5: Copy Dashboard Scripts (Optional)
+
+```bash
+# Only if you want real-time monitoring dashboards
+mkdir -p ./scripts
+
+# Terminal dashboard (doesn't conflict with existing scripts)
+cp /tmp/subagent-orchestrator/scripts/dashboard.sh ./scripts/
+
+# Web dashboard
+cp -r /tmp/subagent-orchestrator/scripts/dashboard-web ./scripts/
+```
+
+Add to your `package.json` `scripts` section:
+```json
+{
+  "scripts": {
+    "dashboard": "bash scripts/dashboard.sh",
+    "dashboard:web": "node scripts/dashboard-web/server.js"
+  }
+}
+```
+
+### Step 6: Open in Antigravity
 
 ```bash
 antigravity open .
@@ -194,18 +284,30 @@ EOF
 
 ### Mix with Existing Skills
 
-If you already had skills before integration, they coexist:
+If you already had skills before integration, they **coexist peacefully**:
 
 ```
 .agent/skills/
-├── your-existing-skill/          ← your original skill
-├── your-other-skill/             ← your original skill
+├── your-existing-skill/          ← your original skill (untouched)
+├── your-other-skill/             ← your original skill (untouched)
 ├── backend-agent/                ← newly integrated
 ├── frontend-agent/               ← newly integrated
 └── ... (and so on)
 ```
 
-All work together seamlessly.
+**Key safety points:**
+- Using the copy method above, your existing skills are **never overwritten**
+- Each skill is a separate folder identified by its `SKILL.md` name
+- Antigravity loads all skills from `.agent/skills/` regardless of source
+- If you have a naming conflict (e.g., you already have a `backend-agent`), the copy command will **skip it** and warn you
+
+**In case of naming conflict:**
+```bash
+# If you already have a backend-agent and want to compare:
+diff -r /tmp/subagent-orchestrator/.agent/skills/backend-agent .agent/skills/backend-agent/
+
+# Then decide: keep yours, use new one, or merge manually
+```
 
 ---
 
@@ -305,31 +407,87 @@ const PORT = 9848;  // or any other free port
 
 Then access `http://localhost:9848`
 
+### Existing Skills Were Overwritten
+
+**If you accidentally used the wrong copy command:**
+```bash
+# Wrong: this overwrites .agent/skills/ completely
+cp -r /tmp/subagent-orchestrator/.agent/skills .agent/
+
+# Restore from git
+git checkout .agent/skills/
+# Then use the correct method from Step 3 above
+```
+
+### Skills Not Loading After Integration
+
+1. Check `.agent/skills/` contents:
+   ```bash
+   ls -la .agent/skills/
+   # Should show multiple folders: backend-agent, frontend-agent, etc.
+   ```
+
+2. Check each skill has `SKILL.md`:
+   ```bash
+   find .agent/skills/ -name "SKILL.md" | wc -l
+   # Should show 7+ (one for each skill)
+   ```
+
+3. Verify no `.gitignore` is hiding skills:
+   ```bash
+   git check-ignore .agent/skills/backend-agent/SKILL.md
+   # Should return nothing (not ignored)
+   ```
+
+4. Restart Antigravity IDE
+
 ---
 
 ## Best Practices
 
-1. **Commit after integration**
+1. **Backup first** ⭐ CRITICAL
    ```bash
-   git add .agent/skills scripts/dashboard* package.json
+   git commit -am "backup: before integrating multi-agent skills"
+   # or create a backup branch
+   git checkout -b backup/before-integration
+   git checkout -
+   ```
+
+2. **Use the safe copy method** — Copy skills individually to `.agent/skills/` directory, don't overwrite the entire folder
+
+3. **Test integration** — Open in Antigravity IDE and verify all skills load before committing
+   ```bash
+   antigravity open .
+   # Try a simple chat request to verify skills are available
+   ```
+
+4. **Commit after successful testing**
+   ```bash
+   git add .agent/skills scripts/dashboard* package.json .gitignore
    git commit -m "feat: Integrate Antigravity Multi-Agent Skills"
    ```
 
-2. **Customize for your tech stack** — Edit skill instructions to match your frameworks and patterns
+5. **Serena compatibility** ✅ No conflicts
+   - Serena (MCP tool) and Antigravity Skills work independently
+   - Serena handles code analysis/modification
+   - Our skills provide multi-agent orchestration
+   - No directory or file conflicts
 
-3. **Keep orchestrator config in version control** — `.agent/skills/orchestrator/config/cli-config.yaml`
+6. **Customize for your tech stack** — Edit skill instructions in `.agent/skills/{name}/SKILL.md` to match your frameworks
 
-4. **Use separate workspaces** — When spawning agents via CLI, assign each a directory:
+7. **Keep orchestrator config in version control** — `.agent/skills/orchestrator/config/cli-config.yaml`
+
+8. **Use separate workspaces** — When spawning agents via CLI, assign each a directory:
    ```bash
    ./scripts/spawn-subagent.sh backend "task" ./backend-work
    ./scripts/spawn-subagent.sh frontend "task" ./frontend-work
    ```
 
-5. **Monitor with dashboards** — Run `npm run dashboard:web` in one terminal, spawn agents in another
+9. **Monitor with dashboards** — Run `npm run dashboard:web` in one terminal, spawn agents in another
 
-6. **Review Knowledge Base** — Check `.gemini/antigravity/brain/` for agent outputs and alignment
+10. **Review Knowledge Base** — Check `.gemini/antigravity/brain/` for agent outputs and alignment
 
-7. **Iterate with re-spawns** — Don't start from scratch; re-spawn agent with refined instructions
+11. **Iterate with re-spawns** — Don't start from scratch; re-spawn agent with refined instructions
 
 ---
 

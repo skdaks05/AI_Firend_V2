@@ -46,3 +46,6 @@ See `../_shared/serena-memory-protocol.md`.
 - Common patterns: `resources/common-patterns.md`
 - Debugging checklist: `resources/debugging-checklist.md`
 - Context loading: `../_shared/context-loading.md`
+- Reasoning templates: `../_shared/reasoning-templates.md`
+- Context budget: `../_shared/context-budget.md`
+- Lessons learned: `../_shared/lessons-learned.md`

@@ -36,6 +36,7 @@ This skill orchestrates CLI subagents via `gemini -p "..." --yolo`. It uses Sere
 **PHASE 2 - Setup**: `write_memory("orchestrator-session.md")` + `write_memory("task-board.md")`
 **PHASE 3 - Execute**: Spawn agents by priority tier (never exceed MAX_PARALLEL)
 **PHASE 4 - Monitor**: Poll every POLL_INTERVAL; handle completed/failed/crashed agents
+**PHASE 4.5 - Verify**: Run `../_shared/verify.sh {agent-type} {workspace}` per completed agent
 **PHASE 5 - Collect**: Read all `result-{agent}.md`, compile summary, cleanup progress files
 
 See `resources/subagent-prompt-template.md` for prompt construction.
@@ -50,8 +51,17 @@ See `resources/memory-schema.md` for memory file formats.
 | `progress-{agent}.md` | that agent | orchestrator reads |
 | `result-{agent}.md` | that agent | orchestrator reads |
 
+## Verification Gate (PHASE 4.5)
+After each agent completes, run automated verification before accepting the result:
+```bash
+bash .agent/skills/_shared/verify.sh {agent-type} {workspace}
+```
+- **PASS (exit 0)**: Accept result, advance to next task
+- **FAIL (exit 1)**: Treat as failure → enter Retry Logic with verify output as error context
+- This is mandatory. Never skip verification even if the agent reports success.
+
 ## Retry Logic
-- 1st retry: Wait 30s, re-spawn with error context
+- 1st retry: Wait 30s, re-spawn with error context (include verify.sh output)
 - 2nd retry: Wait 60s, add "Try a different approach"
 - Final failure: Report to user, ask whether to continue or abort
 
@@ -66,3 +76,7 @@ See `resources/memory-schema.md` for memory file formats.
 - API contracts: `../_shared/api-contracts/`
 - Context loading: `../_shared/context-loading.md`
 - Difficulty guide: `../_shared/difficulty-guide.md`
+- Reasoning templates: `../_shared/reasoning-templates.md`
+- Clarification protocol: `../_shared/clarification-protocol.md`
+- Context budget: `../_shared/context-budget.md`
+- Lessons learned: `../_shared/lessons-learned.md`

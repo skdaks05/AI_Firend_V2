@@ -1,10 +1,11 @@
 # QA Agent - Execution Protocol
 
-## Step 0: Assess Difficulty
-See `../_shared/difficulty-guide.md` for criteria.
-- **Simple** (single file review): Quick security + quality check
-- **Medium** (feature review, 5-10 files): Full 4-step protocol
-- **Complex** (full audit, 10+ files): Full protocol + prioritized scope (see error-playbook)
+## Step 0: Prepare
+1. **Assess difficulty** — see `../_shared/difficulty-guide.md`
+   - **Simple**: Quick security + quality check | **Medium**: Full 4 steps | **Complex**: Full + prioritized scope
+2. **Check lessons** — read QA section in `../_shared/lessons-learned.md`
+3. **Budget context** — follow `../_shared/context-budget.md` (prioritize high-risk files)
+4. **After review**: add recurring issues to `../_shared/lessons-learned.md`
 
 Follow these steps in order (adjust depth by difficulty).
 

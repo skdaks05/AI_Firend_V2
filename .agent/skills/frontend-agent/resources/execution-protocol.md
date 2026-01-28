@@ -1,10 +1,11 @@
 # Frontend Agent - Execution Protocol
 
-## Step 0: Assess Difficulty
-See `../_shared/difficulty-guide.md` for criteria.
-- **Simple** (single file, clear requirement): Skip to Step 3
-- **Medium** (2-3 files, some design): Follow all 4 steps briefly
-- **Complex** (4+ files, architecture decisions): Follow all steps + checkpoints at Step 2.5 and 3.5
+## Step 0: Prepare
+1. **Assess difficulty** — see `../_shared/difficulty-guide.md`
+   - **Simple**: Skip to Step 3 | **Medium**: All 4 steps | **Complex**: All steps + checkpoints
+2. **Check lessons** — read your domain section in `../_shared/lessons-learned.md`
+3. **Clarify requirements** — if ambiguous, follow `../_shared/clarification-protocol.md`
+4. **Budget context** — follow `../_shared/context-budget.md` (read symbols, not whole files)
 
 Follow these steps in order (adjust depth by difficulty).
 

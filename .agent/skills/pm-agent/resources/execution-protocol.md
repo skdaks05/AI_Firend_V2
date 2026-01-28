@@ -1,10 +1,11 @@
 # PM Agent - Execution Protocol
 
-## Step 0: Assess Difficulty
-See `../_shared/difficulty-guide.md` for criteria.
-- **Simple** (single feature, clear scope): Lightweight plan, 3-5 tasks max
-- **Medium** (multi-domain feature): Full 4-step protocol
-- **Complex** (full app, many domains): Full protocol + API contracts in `../_shared/api-contracts/`
+## Step 0: Prepare
+1. **Assess difficulty** — see `../_shared/difficulty-guide.md`
+   - **Simple**: Lightweight plan, 3-5 tasks | **Medium**: Full 4 steps | **Complex**: Full + API contracts
+2. **Clarify requirements** — follow `../_shared/clarification-protocol.md` (critical for PM)
+3. **Use reasoning templates** — for architecture decisions, use `../_shared/reasoning-templates.md` (decision matrix)
+4. **Check lessons** — read cross-domain section in `../_shared/lessons-learned.md`
 
 Follow these steps in order (adjust depth by difficulty).
 

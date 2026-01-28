@@ -42,3 +42,7 @@ See `../_shared/serena-memory-protocol.md`.
 - Component template: `resources/component-template.tsx`
 - Tailwind rules: `resources/tailwind-rules.md`
 - Context loading: `../_shared/context-loading.md`
+- Reasoning templates: `../_shared/reasoning-templates.md`
+- Clarification: `../_shared/clarification-protocol.md`
+- Context budget: `../_shared/context-budget.md`
+- Lessons learned: `../_shared/lessons-learned.md`

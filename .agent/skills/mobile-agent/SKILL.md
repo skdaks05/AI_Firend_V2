@@ -40,3 +40,7 @@ See `../_shared/serena-memory-protocol.md`.
 - Tech stack: `resources/tech-stack.md`
 - Screen template: `resources/screen-template.dart`
 - Context loading: `../_shared/context-loading.md`
+- Reasoning templates: `../_shared/reasoning-templates.md`
+- Clarification: `../_shared/clarification-protocol.md`
+- Context budget: `../_shared/context-budget.md`
+- Lessons learned: `../_shared/lessons-learned.md`

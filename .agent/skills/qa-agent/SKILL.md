@@ -39,3 +39,5 @@ See `../_shared/serena-memory-protocol.md`.
 - Self-check: `resources/self-check.md`
 - Error recovery: `resources/error-playbook.md`
 - Context loading: `../_shared/context-loading.md`
+- Context budget: `../_shared/context-budget.md`
+- Lessons learned: `../_shared/lessons-learned.md`

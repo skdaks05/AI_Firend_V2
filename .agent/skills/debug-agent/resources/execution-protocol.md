@@ -1,10 +1,11 @@
 # Debug Agent - Execution Protocol
 
-## Step 0: Assess Difficulty
-See `../_shared/difficulty-guide.md` for criteria.
-- **Simple** (obvious single-cause bug): Skip to Step 3
-- **Medium** (needs tracing across 2-3 files): Follow all 4 steps
-- **Complex** (race condition, multi-domain, architectural): Follow all steps + checkpoints
+## Step 0: Prepare
+1. **Assess difficulty** — see `../_shared/difficulty-guide.md`
+   - **Simple**: Skip to Step 3 | **Medium**: All 4 steps | **Complex**: All steps + checkpoints
+2. **Check lessons** — read your domain section in `../_shared/lessons-learned.md`
+3. **Use reasoning templates** — for Complex bugs, use `../_shared/reasoning-templates.md` (hypothesis loop, execution trace)
+4. **Budget context** — follow `../_shared/context-budget.md` (use find_symbol, not read_file)
 
 Follow these steps in order (adjust depth by difficulty).
 

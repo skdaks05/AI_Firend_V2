@@ -41,3 +41,7 @@ Save plan to `.agent/plan.json` and `.gemini/antigravity/brain/current-plan.md`.
 - Task schema: `resources/task-template.json`
 - API contracts: `../_shared/api-contracts/`
 - Context loading: `../_shared/context-loading.md`
+- Reasoning templates: `../_shared/reasoning-templates.md`
+- Clarification: `../_shared/clarification-protocol.md`
+- Context budget: `../_shared/context-budget.md`
+- Lessons learned: `../_shared/lessons-learned.md`

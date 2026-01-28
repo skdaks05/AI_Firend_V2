@@ -37,3 +37,5 @@ See `../_shared/serena-memory-protocol.md`.
 - Report examples: `resources/examples.md`
 - QA checklist: `resources/checklist.md`
 - Self-check: `resources/self-check.md`
+- Error recovery: `resources/error-playbook.md`
+- Context loading: `../_shared/context-loading.md`

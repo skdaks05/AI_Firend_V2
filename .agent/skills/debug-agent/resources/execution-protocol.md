@@ -1,6 +1,12 @@
 # Debug Agent - Execution Protocol
 
-Follow these 4 steps in order for every bug.
+## Step 0: Assess Difficulty
+See `../_shared/difficulty-guide.md` for criteria.
+- **Simple** (obvious single-cause bug): Skip to Step 3
+- **Medium** (needs tracing across 2-3 files): Follow all 4 steps
+- **Complex** (race condition, multi-domain, architectural): Follow all steps + checkpoints
+
+Follow these steps in order (adjust depth by difficulty).
 
 ## Step 1: Understand
 - Gather: What happened? What was expected? Error messages? Steps to reproduce?
@@ -34,3 +40,6 @@ Follow these 4 steps in order for every bug.
 - Save bug report to `.gemini/antigravity/brain/bugs/` using `resources/bug-report-template.md`
 - Include: root cause, fix, prevention advice
 - Verify no regressions in related functionality
+
+## On Error
+See `resources/error-playbook.md` for recovery steps.

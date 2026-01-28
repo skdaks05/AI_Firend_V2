@@ -1,6 +1,12 @@
 # Backend Agent - Execution Protocol
 
-Follow these 4 steps in order for every task.
+## Step 0: Assess Difficulty
+See `../_shared/difficulty-guide.md` for criteria.
+- **Simple** (single file, clear requirement): Skip to Step 3
+- **Medium** (2-3 files, some design): Follow all 4 steps briefly
+- **Complex** (4+ files, architecture decisions): Follow all steps + checkpoints at Step 2.5 and 3.5
+
+Follow these steps in order (adjust depth by difficulty).
 
 ## Step 1: Analyze
 - Read the task requirements carefully
@@ -29,3 +35,6 @@ Follow these 4 steps in order for every task.
 - Run `../_shared/common-checklist.md` items
 - Ensure all tests pass
 - Confirm OpenAPI docs are complete
+
+## On Error
+See `resources/error-playbook.md` for recovery steps.

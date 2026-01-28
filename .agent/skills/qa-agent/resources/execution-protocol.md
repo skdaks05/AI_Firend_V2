@@ -1,6 +1,12 @@
 # QA Agent - Execution Protocol
 
-Follow these 4 steps in order for every review.
+## Step 0: Assess Difficulty
+See `../_shared/difficulty-guide.md` for criteria.
+- **Simple** (single file review): Quick security + quality check
+- **Medium** (feature review, 5-10 files): Full 4-step protocol
+- **Complex** (full audit, 10+ files): Full protocol + prioritized scope (see error-playbook)
+
+Follow these steps in order (adjust depth by difficulty).
 
 ## Step 1: Scope
 - Identify what to review: new feature, full audit, or specific concern
@@ -33,3 +39,6 @@ Generate structured report with:
 - Ensure no false positives (each finding is real and reproducible)
 - Confirm remediation suggestions are correct and complete
 - Run `../_shared/common-checklist.md` for general quality
+
+## On Error
+See `resources/error-playbook.md` for recovery steps.

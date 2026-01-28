@@ -35,6 +35,9 @@ See `../_shared/serena-memory-protocol.md`.
 ## References
 - Execution steps: `resources/execution-protocol.md`
 - Code examples: `resources/examples.md`
+- Code snippets: `resources/snippets.md`
 - Checklist: `resources/checklist.md`
+- Error recovery: `resources/error-playbook.md`
 - Tech stack: `resources/tech-stack.md`
 - API template: `resources/api-template.py`
+- Context loading: `../_shared/context-loading.md`

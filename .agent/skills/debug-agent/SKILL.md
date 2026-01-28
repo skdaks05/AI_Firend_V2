@@ -41,6 +41,8 @@ See `../_shared/serena-memory-protocol.md`.
 - Execution steps: `resources/execution-protocol.md`
 - Code examples: `resources/examples.md`
 - Checklist: `resources/checklist.md`
+- Error recovery: `resources/error-playbook.md`
 - Bug report template: `resources/bug-report-template.md`
 - Common patterns: `resources/common-patterns.md`
 - Debugging checklist: `resources/debugging-checklist.md`
+- Context loading: `../_shared/context-loading.md`

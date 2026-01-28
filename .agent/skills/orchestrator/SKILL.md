@@ -61,3 +61,8 @@ See `resources/memory-schema.md` for memory file formats.
 - Config: `config/cli-config.yaml`
 - Scripts: `scripts/spawn-agent.sh`, `scripts/parallel-run.sh`
 - Task templates: `templates/`
+- Skill routing: `../_shared/skill-routing.md`
+- Verification: `../_shared/verify.sh`
+- API contracts: `../_shared/api-contracts/`
+- Context loading: `../_shared/context-loading.md`
+- Difficulty guide: `../_shared/difficulty-guide.md`

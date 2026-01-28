@@ -37,4 +37,7 @@ Save plan to `.agent/plan.json` and `.gemini/antigravity/brain/current-plan.md`.
 ## References
 - Execution steps: `resources/execution-protocol.md`
 - Plan examples: `resources/examples.md`
+- Error recovery: `resources/error-playbook.md`
 - Task schema: `resources/task-template.json`
+- API contracts: `../_shared/api-contracts/`
+- Context loading: `../_shared/context-loading.md`

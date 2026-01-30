@@ -16,6 +16,7 @@ Google Antigravity IDE용 전문 에이전트 스킬 모음. PM, Frontend, Backe
 | **QA Agent** | OWASP Top 10 보안, 성능, 접근성 감사 |
 | **Debug Agent** | 버그 진단, 근본 원인 분석, 회귀 테스트 |
 | **Orchestrator** | CLI 기반 병렬 에이전트 실행 + Serena Memory |
+| **Commit** | Conventional Commits 규칙 기반 커밋 관리 |
 
 ## 빠른 시작
 
@@ -56,7 +57,16 @@ antigravity open .
 
 모든 스킬이 이제 본인 프로젝트에서 사용 가능합니다!
 
-### 2. 채팅으로 사용
+### 2. 초기 설정 (선택)
+
+```
+/setup
+→ CLI 설치 확인, MCP 연결 상태, 언어 및 CLI 매핑 설정
+```
+
+이 명령은 `.agent/config/user-preferences.yaml`을 생성합니다.
+
+### 3. 채팅으로 사용
 
 **간단한 작업** (단일 에이전트 자동 활성화):
 ```
@@ -74,6 +84,12 @@ antigravity open .
 ```
 /coordinate
 → 단계별: PM 기획 → 에이전트 생성 → QA 검토
+```
+
+**변경사항 커밋** (Conventional Commits):
+```
+/commit
+→ 변경 분석, 커밋 타입/스코프 제안, Co-Author 포함 커밋 생성
 ```
 
 ### 3. 대시보드로 모니터링
@@ -121,6 +137,36 @@ wait
 ```
 
 지원 CLI: **Gemini**, **Claude**, **Codex**, **Qwen**
+
+### 멀티-CLI 설정
+
+`.agent/config/user-preferences.yaml`에서 에이전트별 CLI 설정:
+
+```yaml
+# 응답 언어
+language: ko  # ko, en, ja, zh, ...
+
+# 기본 CLI (단일 작업)
+default_cli: gemini
+
+# 에이전트별 CLI 매핑 (멀티-CLI 모드)
+agent_cli_mapping:
+  frontend: gemini
+  backend: codex
+  mobile: gemini
+  pm: claude
+  qa: claude
+  debug: gemini
+```
+
+**CLI 우선순위**:
+1. `--vendor` 명령줄 인자
+2. `user-preferences.yaml`의 `agent_cli_mapping`
+3. `user-preferences.yaml`의 `default_cli`
+4. `cli-config.yaml`의 `active_vendor` (레거시)
+5. 하드코딩 기본값: `gemini`
+
+대화형으로 설정하려면 `/setup` 실행.
 
 ### Serena Memory 조율
 
@@ -186,12 +232,16 @@ npm run dashboard:web
 ```
 .
 ├── .agent/
+│   ├── config/
+│   │   └── user-preferences.yaml   # 언어, 타임존, CLI 매핑
 │   ├── workflows/
 │   │   ├── coordinate.md           # /coordinate (UI 기반 멀티 에이전트 조율)
 │   │   ├── orchestrate.md          # /orchestrate (CLI 자동 병렬 실행)
 │   │   ├── plan.md                 # /plan (PM 태스크 분해)
 │   │   ├── review.md               # /review (전체 QA 파이프라인)
-│   │   └── debug.md                # /debug (구조화된 버그 수정)
+│   │   ├── debug.md                # /debug (구조화된 버그 수정)
+│   │   ├── setup.md                # /setup (CLI & MCP 설정)
+│   │   └── tools.md                # /tools (MCP 도구 관리)
 │   └── skills/
 │       ├── _shared/                    # 공통 리소스 (스킬 아님)
 │       │   ├── serena-memory-protocol.md
@@ -212,7 +262,8 @@ npm run dashboard:web
 │       ├── mobile-agent/               # Flutter
 │       ├── qa-agent/                   # 보안 & QA
 │       ├── debug-agent/                # 버그 수정
-│       └── orchestrator/               # CLI 기반 서브에이전트 실행
+│       ├── orchestrator/               # CLI 기반 서브에이전트 실행
+│       └── commit/                     # Conventional Commits 스킬
 │       # 각 스킬 구조:
 │       #   SKILL.md              (~40줄, 토큰 최적화)
 │       #   resources/
@@ -310,6 +361,11 @@ npm run dashboard:web
 ### orchestrator
 **발동 조건**: 프로그래밍 방식의 서브에이전트 실행
 **지원 CLI**: Gemini, Claude, Codex, Qwen (설정 가능)
+
+### commit
+**발동 조건**: "커밋해줘", "commit", "변경사항 저장"
+**형식**: Conventional Commits + Co-Author 태그
+**설정**: `.agent/skills/commit/config/commit-config.yaml`
 
 ## 사전 요구 사항
 

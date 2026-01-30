@@ -4,7 +4,9 @@ description: Structured bug diagnosis and fixing workflow — reproduce, diagnos
 
 # MANDATORY RULES — VIOLATION IS FORBIDDEN
 
-- **All responses MUST be written in Korean (한국어).** Do NOT respond in English.
+- **응답 언어는 `.agent/config/user-preferences.yaml`의 `language` 설정을 따른다.**
+  - 설정 파일이 없으면 기본값: 한국어(ko)
+  - 설정값 예시: ko(한국어), en(English), ja(日本語), zh(中文)
 - **NEVER skip steps.** Execute from Step 1 in order.
 - **You MUST use MCP tools throughout the workflow.**
   - Use code analysis tools (`find_symbol`, `find_referencing_symbols`, `search_for_pattern`) for bug investigation — NOT raw file reads or grep.

@@ -76,7 +76,39 @@ get_vendor_config() {
     ' "$CONFIG_FILE"
 }
 
-# Get active vendor from config or argument
+# Get CLI for specific agent type from user-preferences.yaml
+get_agent_cli() {
+    local agent_type="$1"
+    local prefs="${SCRIPT_DIR}/../../config/user-preferences.yaml"
+    if [[ -f "$prefs" ]]; then
+        grep -A10 "^agent_cli_mapping:" "$prefs" 2>/dev/null | \
+            grep "^  ${agent_type}:" | \
+            sed 's/^[^:]*: *//' | tr -d '"' | xargs
+    fi
+}
+
+# Get default CLI from user-preferences.yaml
+get_default_cli() {
+    local prefs="${SCRIPT_DIR}/../../config/user-preferences.yaml"
+    if [[ -f "$prefs" ]]; then
+        grep "^default_cli:" "$prefs" 2>/dev/null | sed 's/^[^:]*: *//' | tr -d '"' | xargs
+    fi
+}
+
+# Get vendor from (in priority order):
+# 1) command line arg (--vendor)
+# 2) agent_cli_mapping from user-preferences.yaml
+# 3) default_cli from user-preferences.yaml
+# 4) active_vendor from cli-config.yaml (legacy/fallback)
+# 5) hardcoded "gemini"
+if [[ -z "$VENDOR" ]]; then
+    VENDOR=$(get_agent_cli "$AGENT_TYPE")
+fi
+
+if [[ -z "$VENDOR" ]]; then
+    VENDOR=$(get_default_cli)
+fi
+
 if [[ -z "$VENDOR" ]]; then
     VENDOR=$(get_config "active_vendor")
 fi

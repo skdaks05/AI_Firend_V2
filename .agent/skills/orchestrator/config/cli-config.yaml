@@ -1,7 +1,8 @@
 # SubAgent CLI Configuration
 # Select your preferred CLI vendor for sub-agent execution
 
-# Active CLI vendor (gemini, claude, codex, qwen)
+# Default CLI vendor (used as fallback when user-preferences.yaml is not configured)
+# For per-agent CLI mapping, see: .agent/config/user-preferences.yaml
 active_vendor: gemini
 
 # Vendor configurations

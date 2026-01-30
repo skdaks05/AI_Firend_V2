@@ -16,6 +16,7 @@ A collection of **Antigravity Skills** enabling collaborative multi-agent develo
 | **QA Agent** | OWASP Top 10 security, performance, accessibility |
 | **Debug Agent** | Bug diagnosis, root cause analysis, regression tests |
 | **Orchestrator** | CLI-based parallel agent execution with Serena Memory |
+| **Commit** | Conventional Commits with project-specific rules |
 
 ## Quick Start
 
@@ -56,7 +57,16 @@ antigravity open .
 
 All skills are now available in your project!
 
-### 2. Chat
+### 2. Initial Setup (Optional)
+
+```
+/setup
+→ Check CLI installations, MCP connections, configure language & CLI mapping
+```
+
+This creates `.agent/config/user-preferences.yaml` for your project.
+
+### 3. Chat
 
 **Simple task** (single agent auto-activates):
 ```
@@ -74,6 +84,12 @@ All skills are now available in your project!
 ```
 /coordinate
 → Step-by-step: PM planning → agent spawning → QA review
+```
+
+**Commit changes** (conventional commits):
+```
+/commit
+→ Analyze changes, suggest commit type/scope, create commit with Co-Author
 ```
 
 ### 3. Monitor with Dashboards
@@ -121,6 +137,36 @@ wait
 ```
 
 Supports multiple CLI vendors: **Gemini**, **Claude**, **Codex**, **Qwen**
+
+### Multi-CLI Configuration
+
+Configure different CLIs per agent type in `.agent/config/user-preferences.yaml`:
+
+```yaml
+# Response language
+language: ko  # ko, en, ja, zh, ...
+
+# Default CLI (single tasks)
+default_cli: gemini
+
+# Per-agent CLI mapping (multi-CLI mode)
+agent_cli_mapping:
+  frontend: gemini
+  backend: codex
+  mobile: gemini
+  pm: claude
+  qa: claude
+  debug: gemini
+```
+
+**CLI Resolution Priority**:
+1. `--vendor` command line argument
+2. `agent_cli_mapping` from user-preferences.yaml
+3. `default_cli` from user-preferences.yaml
+4. `active_vendor` from cli-config.yaml (legacy)
+5. Hardcoded fallback: `gemini`
+
+Run `/setup` to configure interactively.
 
 ### Serena Memory Coordination
 
@@ -186,12 +232,16 @@ Features:
 ```
 .
 ├── .agent/
+│   ├── config/
+│   │   └── user-preferences.yaml   # Language, timezone, CLI mapping
 │   ├── workflows/
 │   │   ├── coordinate.md           # /coordinate (multi-agent orchestration via UI)
 │   │   ├── orchestrate.md          # /orchestrate (automated CLI parallel execution)
 │   │   ├── plan.md                 # /plan (PM task decomposition)
 │   │   ├── review.md               # /review (full QA pipeline)
-│   │   └── debug.md                # /debug (structured bug fixing)
+│   │   ├── debug.md                # /debug (structured bug fixing)
+│   │   ├── setup.md                # /setup (CLI & MCP configuration)
+│   │   └── tools.md                # /tools (MCP tool management)
 │   └── skills/
 │       ├── _shared/                    # Common resources (not a skill)
 │       │   ├── serena-memory-protocol.md
@@ -212,7 +262,8 @@ Features:
 │       ├── mobile-agent/               # Flutter
 │       ├── qa-agent/                   # Security & QA
 │       ├── debug-agent/                # Bug fixing
-│       └── orchestrator/               # CLI-based sub-agent spawner
+│       ├── orchestrator/               # CLI-based sub-agent spawner
+│       └── commit/                     # Conventional commits skill
 │       # Each skill has:
 │       #   SKILL.md              (~40 lines, token-optimized)
 │       #   resources/
@@ -310,6 +361,11 @@ Each skill provides domain-specific resources:
 ### orchestrator
 **Triggers**: Programmatic sub-agent execution
 **CLIs**: Gemini, Claude, Codex, Qwen (configurable)
+
+### commit
+**Triggers**: "commit", "커밋해줘", "save changes"
+**Format**: Conventional Commits with Co-Author tag
+**Config**: `.agent/skills/commit/config/commit-config.yaml`
 
 ## Prerequisites
 

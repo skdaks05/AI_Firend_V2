@@ -1,0 +1,24 @@
+# User Preferences (Optional)
+# 프로젝트별 사용자 환경설정
+#
+# 이 파일은 선택사항입니다. 없어도 기본값으로 동작합니다.
+# CLI 우선순위: --vendor arg > agent_cli_mapping > default_cli > cli-config.yaml의 active_vendor > gemini
+
+# 응답 언어 설정 (ko, en, ja, zh, ...)
+language: ko
+
+# 날짜/시간 형식
+date_format: ISO
+timezone: Asia/Seoul
+
+# 기본 CLI (단일 작업 시)
+default_cli: gemini
+
+# 에이전트별 CLI 매핑 (멀티-CLI 모드)
+agent_cli_mapping:
+  frontend: gemini
+  backend: gemini
+  mobile: gemini
+  qa: gemini
+  debug: gemini
+  pm: gemini

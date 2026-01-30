@@ -1,0 +1,55 @@
+# Commit Configuration
+
+# Conventional Commits 활성화
+conventional_commits: true
+
+# 허용되는 커밋 타입
+types:
+  - feat
+  - fix
+  - refactor
+  - docs
+  - test
+  - chore
+  - style
+  - perf
+
+# 브랜치 접두사 규칙
+branch_prefixes:
+  feat: "feature/"
+  fix: "fix/"
+  refactor: "refactor/"
+  docs: "docs/"
+  test: "test/"
+  chore: "chore/"
+  hotfix: "hotfix/"
+  style: "style/"
+  perf: "perf/"
+
+# 커밋 메시지 규칙
+message:
+  max_subject_length: 72
+  require_body: false
+  body_wrap_length: 100
+
+# Scope 규칙
+scope:
+  required: false
+  # 허용되는 scope 목록 (비어있으면 모두 허용)
+  allowed: []
+
+# Co-Author 설정
+co_author:
+  enabled: true
+  name: "Claude Opus 4.5"
+  email: "noreply@anthropic.com"
+
+# 금지된 파일 패턴 (커밋 경고)
+forbidden_patterns:
+  - "*.env"
+  - "*.env.*"
+  - "credentials.json"
+  - "secrets.yaml"
+  - "*.pem"
+  - "*.key"
+  - ".env.local"

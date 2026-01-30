@@ -43,10 +43,11 @@ Created by the orchestrator at session start. Updated throughout execution.
 ## Status: running | completed | failed | aborted
 
 ## Agents
-| Agent ID | PID | Status | Task |
-|----------|-----|--------|------|
-| backend  | 12345 | running | task-1 |
-| frontend | 12346 | completed | task-2 |
+| Agent ID | CLI | PID | Status | Task |
+|----------|-----|-----|--------|------|
+| backend  | gemini | 12345 | running | task-1 |
+| frontend | gemini | 12346 | completed | task-2 |
+| mobile   | claude | 12347 | running | task-3 |
 
 ## Configuration
 - MAX_PARALLEL: 3
@@ -71,6 +72,7 @@ Master task list created by the orchestrator. Subagents read this to understand 
 
 ### task-1
 - **Agent**: backend
+- **CLI**: gemini
 - **Title**: JWT authentication API
 - **Status**: pending | in_progress | completed | failed | blocked
 - **Priority**: 1
@@ -84,6 +86,7 @@ Master task list created by the orchestrator. Subagents read this to understand 
 
 ### task-2
 - **Agent**: frontend
+- **CLI**: gemini
 - **Title**: Login and registration UI
 - **Status**: pending
 - **Priority**: 1
@@ -97,6 +100,7 @@ Master task list created by the orchestrator. Subagents read this to understand 
 
 ### task-3
 - **Agent**: qa
+- **CLI**: gemini
 - **Title**: Security and performance review
 - **Status**: blocked
 - **Priority**: 2

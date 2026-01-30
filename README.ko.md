@@ -6,6 +6,12 @@ Google Antigravity IDE용 전문 에이전트 스킬 모음. PM, Frontend, Backe
 > ```bash
 > gh repo star first-fluke/oh-my-ag
 > ```
+>
+> **풀스택 개발이 처음이신가요?** 최적화된 스타터 템플릿으로 시작필보세요:
+> ```bash
+> git clone https://github.com/first-fluke/fullstack-starter
+> ```
+> 이 스킬들이 미리 설정되어 있어 바로 멀티 에이전트 협업이 가능합니다.
 
 ## 목차
 

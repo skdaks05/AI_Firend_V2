@@ -8,6 +8,12 @@ Professional agent skills for Google Antigravity IDE featuring specialized PM, F
 > ```bash
 > gh api --method PUT /user/starred/first-fluke/oh-my-ag
 > ```
+>
+> **New to fullstack development?** Try our optimized starter template:
+> ```bash
+> git clone https://github.com/first-fluke/fullstack-starter
+> ```
+> Pre-configured with these skills for instant multi-agent collaboration.
 
 ## Table of Contents
 

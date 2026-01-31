@@ -522,8 +522,8 @@ Releases are automated via [release-please](https://github.com/googleapis/releas
 
    ```yaml
    registry:
-repo: first-fluke/oh-my-ag
-   version: "1.2.0"  # Pin to specific version
+     repo: first-fluke/oh-my-ag
+     version: "1.2.0"  # Pin to specific version
    ```
 
 3. **Workflows**:

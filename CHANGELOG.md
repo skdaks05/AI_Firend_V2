@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.1](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.5.0...oh-my-ag-v1.5.1) (2026-02-01)
+
+
+### Bug Fixes
+
+* install workflows to global directory for Antigravity access (fixes [#12](https://github.com/first-fluke/oh-my-ag/issues/12)) ([05498a2](https://github.com/first-fluke/oh-my-ag/commit/05498a2b18bf12130e638e42fbe6fb24b5107fad))
+* **lint:** auto-fix lint errors with biome ([7b8745b](https://github.com/first-fluke/oh-my-ag/commit/7b8745bc2fbee3a3c922e89a91f18b633495bb1a))
+
+
+### Documentation
+
+* add doctor command recommendation for verifying setup ([458eece](https://github.com/first-fluke/oh-my-ag/commit/458eece331ab7a6d7cfb84ecba281d329d5323c8))
+* add project integration instructions to READMEs ([cc923d0](https://github.com/first-fluke/oh-my-ag/commit/cc923d0f39f34a852460823ca61af6cb77d04c4e))
+* restructure and enhance installation instructions and prerequisites in READMEs ([fd1adaf](https://github.com/first-fluke/oh-my-ag/commit/fd1adaf8acdbba94f536e0a025a41addedd63991))
+
 ## [1.5.0](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.4.1...oh-my-ag-v1.5.0) (2026-02-01)
 
 

@@ -153,6 +153,8 @@ Run the following command in your project root to automatically install/update s
 bunx oh-my-ag
 ```
 
+> **Tip:** Run `bunx oh-my-ag doctor` after installation to verify everything is set up correctly (including global workflows).
+
 **Manual Method:**
 
 If you have cloned this repo, you can simply copy the `.agent` directory:

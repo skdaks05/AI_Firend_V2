@@ -5,10 +5,10 @@ import pc from "picocolors";
 import {
   getAllSkills,
   installConfigs,
+  installGlobalWorkflows,
   installShared,
   installSkill,
   installWorkflows,
-  installGlobalWorkflows,
   PRESETS,
 } from "../lib/skills.js";
 

@@ -104,11 +104,7 @@ export async function doctor(jsonMode = false): Promise<void> {
   const cwd = process.cwd();
 
   const clis = await Promise.all([
-    checkCLI(
-      "gemini",
-      "gemini",
-      "bun install --global @anthropic-ai/gemini-cli",
-    ),
+    checkCLI("gemini", "gemini", "bun install --global @google/gemini-cli"),
     checkCLI(
       "claude",
       "claude",

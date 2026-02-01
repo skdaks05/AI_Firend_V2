@@ -31,6 +31,7 @@ description: Coordinate multiple agents for a complex multi-domain project using
 ## Step 1: Analyze Requirements
 
 Analyze the user's request and identify involved domains (frontend, backend, mobile, QA).
+
 - Single domain: suggest using the specific agent directly.
 - Multiple domains: proceed to Step 2.
 - Use MCP code analysis tools (`get_symbols_overview` or `search_for_pattern`) to understand the existing codebase structure relevant to the request.
@@ -42,6 +43,7 @@ Analyze the user's request and identify involved domains (frontend, backend, mob
 
 // turbo
 Activate PM Agent to:
+
 1. Analyze requirements.
 2. Define API contracts.
 3. Create a prioritized task breakdown.
@@ -53,6 +55,7 @@ Activate PM Agent to:
 ## Step 3: Review Plan with User
 
 Present the PM Agent's task breakdown to the user:
+
 - Priorities (P0, P1, P2)
 - Agent assignments
 - Dependencies
@@ -64,10 +67,11 @@ Present the PM Agent's task breakdown to the user:
 
 // turbo
 Spawn agents using CLI for each task:
+
 ```bash
 # Example: spawn backend and frontend in parallel
-.agent/skills/orchestrator/scripts/spawn-agent.sh backend "task description" ./backend &
-.agent/skills/orchestrator/scripts/spawn-agent.sh frontend "task description" ./frontend &
+oh-my-ag agent:spawn backend "task description" session-id ./backend &
+oh-my-ag agent:spawn frontend "task description" session-id ./frontend &
 wait
 ```
 
@@ -88,6 +92,7 @@ wait
 ## Step 6: Run QA Agent Review
 
 After all implementation agents complete, spawn QA Agent to review all deliverables:
+
 - Security (OWASP Top 10)
 - Performance
 - Accessibility (WCAG 2.1 AA)
@@ -98,6 +103,7 @@ After all implementation agents complete, spawn QA Agent to review all deliverab
 ## Step 7: Address Issues and Iterate
 
 If QA finds CRITICAL or HIGH issues:
+
 1. Re-spawn the responsible agent with QA findings.
 2. Repeat Steps 5-7.
 3. Continue until all critical issues are resolved.

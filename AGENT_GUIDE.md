@@ -27,6 +27,7 @@ Before you start, verify:
 ## Step 1: Prepare
 
 **1.1 Ask the user:**
+
 ```
 "I'll integrate Antigravity Multi-Agent Skills into your project.
 - Do you want ONLY the skills? (recommended if you have existing skills)
@@ -35,10 +36,12 @@ Before you start, verify:
 ```
 
 **1.2 If they don't answer, default to:**
+
 - Skills only (safer)
 - No dashboards (can add later)
 
 **1.3 Create a backup:**
+
 ```bash
 cd /path/to/user-project
 git status  # verify repo is clean
@@ -46,6 +49,7 @@ git commit -am "backup: before integrating Antigravity Multi-Agent Skills"
 ```
 
 If commit fails (dirty working directory):
+
 ```
 STOP. Ask user to commit/stash changes first.
 ```
@@ -55,12 +59,14 @@ STOP. Ask user to commit/stash changes first.
 ## Step 2: Copy Skills (Safe Method)
 
 Navigate to project:
+
 ```bash
 cd /path/to/user-project
 mkdir -p .agent/skills
 ```
 
 Copy workflows, shared resources, and each skill individually (this prevents overwriting):
+
 ```bash
 REPO="/tmp/oh-my-ag"  # temp clone location
 
@@ -93,6 +99,7 @@ done
 ```
 
 **Verification:**
+
 ```bash
 ls -1 .agent/skills/
 # Should show: _shared, backend-agent, debug-agent, frontend-agent, mobile-agent,
@@ -100,6 +107,7 @@ ls -1 .agent/skills/
 ```
 
 If any skill is missing, inform user:
+
 ```
 "Could not copy skill {name}. Check if repository is accessible."
 ```
@@ -109,11 +117,13 @@ If any skill is missing, inform user:
 ## Step 3: Update .gitignore
 
 Check if `.serena/memories/` rules exist:
+
 ```bash
 grep -q ".serena/memories" .gitignore
 ```
 
 If NOT present, add them:
+
 ```bash
 cat >> .gitignore << 'EOF'
 
@@ -124,6 +134,7 @@ EOF
 ```
 
 Create the directory:
+
 ```bash
 mkdir -p .serena/memories
 touch .serena/memories/.gitkeep
@@ -131,64 +142,25 @@ touch .serena/memories/.gitkeep
 
 ---
 
-## Step 4: Update package.json (If User Wants Dashboards)
+## Step 4: Dashboard Access
 
-Ask user:
-```
-"Do you want real-time monitoring dashboards? (optional, requires npm install)"
-```
+Dashboards are built into the CLI. No installation or configuration is needed in the user's project.
 
-If YES, proceed. If NO, skip to Step 5.
+Users can simply run:
 
-**4.1 Add dependencies:**
 ```bash
-npm install chokidar@^4.0.0 ws@^8.18.0
+oh-my-ag dashboard      # Terminal dashboard
+oh-my-ag dashboard:web  # Web dashboard
 ```
 
-**4.2 Update `package.json` scripts:**
-
-Read current package.json:
-```bash
-cat package.json | grep -A 5 '"scripts"'
-```
-
-If `dashboard` or `dashboard:web` scripts already exist, skip to Step 5.
-
-Otherwise, add to `scripts` section:
-```json
-"dashboard": "bunx oh-my-ag dashboard",
-"dashboard:web": "bunx oh-my-ag dashboard:web"
-```
-
-**Verification:**
-```bash
-bunx oh-my-ag dashboard:web --help 2>&1 | head -3
-# Should show help output without errors
-```
+(Or via `bunx oh-my-ag ...` if not installed globally)
 
 ---
 
-## Step 5: Dashboard Access
+## Step 5: Verify Integration
 
-Dashboards are now built into the CLI. No manual copying needed.
+**5.1 Check skills and shared resources are in place:**
 
-Users can run:
-```bash
-bunx oh-my-ag dashboard      # Terminal dashboard
-bunx oh-my-ag dashboard:web  # Web dashboard
-```
-
-Or via npm scripts (if added to package.json):
-```bash
-bunx oh-my-ag dashboard
-bunx oh-my-ag dashboard:web
-```
-
----
-
-## Step 6: Verify Integration
-
-**6.1 Check skills and shared resources are in place:**
 ```bash
 find .agent/skills -name "SKILL.md" | wc -l
 # Should show: 8
@@ -198,29 +170,25 @@ test -d .agent/skills/_shared && echo "✅ _shared/ exists" || echo "⚠️  _sh
 
 If not 8 skills or `_shared/` is missing, inform user which parts are missing.
 
-**6.2 Check .gitignore doesn't hide skills:**
+**5.2 Check .gitignore doesn't hide skills:**
+
 ```bash
 git check-ignore .agent/skills/backend-agent/SKILL.md
 # Should return NOTHING (blank line = not ignored)
 ```
 
 If it returns a path, inform user:
+
 ```
 "ERROR: .gitignore is hiding the skills directory. Please fix manually."
 ```
 
-**6.3 Verify package.json has correct scripts:**
-```bash
-grep -q '"dashboard":' package.json && echo "✅ dashboard script found" || echo "⚠️  missing"
-grep -q '"dashboard:web":' package.json && echo "✅ dashboard:web script found" || echo "⚠️  missing"
-```
-
 ---
 
-## Step 7: Commit Changes
+## Step 6: Commit Changes
 
 ```bash
-git add .agent/skills .serena/memories .gitignore package.json package-lock.json
+git add .agent/skills .serena/memories .gitignore
 
 git commit -m "feat: Integrate Antigravity Multi-Agent Skills (8 agents)
 
@@ -234,17 +202,18 @@ Integrated skills:
 - debug-agent: Bug fixing
 - orchestrator: CLI-based sub-agent spawning
 
-Dashboards: $(command -v bunx >/dev/null 2>&1 && echo 'available via bunx' || echo 'install bun first')
+Dashboards: Available via 'oh-my-ag dashboard' (global CLI)
 ```
 
 If commit fails:
+
 ```
 STOP. Ask user to review git status and resolve conflicts.
 ```
 
 ---
 
-## Step 8: Test Integration
+## Step 7: Test Integration
 
 Ask user to:
 
@@ -254,6 +223,7 @@ antigravity open .
 ```
 
 Then in Antigravity IDE chat, ask user to type:
+
 ```
 "Create a simple function that adds two numbers"
 ```
@@ -261,11 +231,13 @@ Then in Antigravity IDE chat, ask user to type:
 Expected: frontend-agent or backend-agent activates automatically.
 
 Wait 30 seconds for response. If skills load:
+
 ```
 "✅ Integration successful! All skills are loaded and working."
 ```
 
 If no response or error:
+
 ```
 "⚠️  Skills may not have loaded. Check Antigravity IDE for errors."
 ```
@@ -275,21 +247,27 @@ If no response or error:
 ## Troubleshooting During Execution
 
 ### Problem: "Permission denied" when copying skills
+
 **Solution:**
+
 ```bash
 chmod -R u+r "$REPO/.agent/skills"
 # Retry copy command
 ```
 
 ### Problem: "git commit" fails (dirty working directory)
+
 **Solution:**
+
 ```
 Ask user to: git status
 Then ask them to commit or stash their changes first.
 ```
 
 ### Problem: Skills were accidentally overwritten
+
 **Solution:**
+
 ```bash
 # Restore
 git checkout .agent/skills/
@@ -297,16 +275,10 @@ git checkout .agent/skills/
 # Then redo Step 2 with the safe method above
 ```
 
-### Problem: Package.json merge conflict
-**Solution:**
-```bash
-# Let user resolve manually OR:
-git checkout --theirs package.json
-# Manually re-add the dashboard scripts
-```
-
 ### Problem: .gitignore is hiding skills
+
 **Solution:**
+
 ```bash
 # Check what's hiding them:
 git check-ignore -v .agent/skills/backend-agent/SKILL.md
@@ -328,7 +300,6 @@ Integration is complete when:
 - ✅ Each skill has `SKILL.md` and `resources/` directory
 - ✅ `.serena/memories/` directory created with `.gitkeep`
 - ✅ `.gitignore` includes Serena Memory rules
-- ✅ `package.json` has `dashboard` and `dashboard:web` scripts (if dashboards enabled)
 - ✅ All changes committed to git
 - ✅ User can open project in Antigravity IDE
 - ✅ At least one skill activates in Antigravity chat

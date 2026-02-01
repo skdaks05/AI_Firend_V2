@@ -163,11 +163,11 @@ bunx oh-my-ag dashboard:web  # 웹 대시보드 (브라우저 UI)
 
 ```bash
 # 단일 에이전트
-./scripts/spawn-subagent.sh backend "인증 API 구현" ./backend
+oh-my-ag agent:spawn backend "인증 API 구현" session-01 ./backend
 
-# 병렬 에이전트
-./scripts/spawn-subagent.sh backend "인증 API 구현" ./backend &
-./scripts/spawn-subagent.sh frontend "로그인 폼 생성" ./frontend &
+# 병렬 실행 (orchestrator 스킬 사용 시)
+oh-my-ag agent:spawn backend "인증 API 구현" session-01 ./backend &
+oh-my-ag agent:spawn frontend "로그인 폼 생성" session-01 ./frontend &
 wait
 ```
 
@@ -312,9 +312,6 @@ bunx oh-my-ag dashboard:web
 │       #     └── snippets.md           (코드 스니펫)
 ├── .serena/
 │   └── memories/                   # 런타임 상태 (gitignore 처리됨)
-├── scripts/
-│   ├── spawn-subagent.sh           # 서브에이전트 실행기
-│   └── poll-status.sh              # 상태 폴링
 ├── package.json
 ├── README.md                       # 영문 가이드
 ├── README.ko.md                    # 한글 가이드 (이 파일)
@@ -414,7 +411,13 @@ bunx oh-my-ag dashboard:web
 - **Google Antigravity** (2026+)
 - **Bun** (CLI 및 대시보드용)
 
-SubAgent Orchestrator를 사용하려면 최소 1개의 CLI 도구 필요:
+SubAgent Orchestrator를 사용하려면 먼저 패키지를 전역으로 설치해야 합니다:
+
+```bash
+bun install --global oh-my-ag
+```
+
+그 후 최소 1개의 CLI 도구가 필요합니다:
 
 | CLI | 설치 | 인증 |
 |-----|------|------|

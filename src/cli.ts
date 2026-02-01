@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { checkStatus, spawnAgent } from "./commands/agent.js";
 import { bridge } from "./commands/bridge.js";
 import { cleanup } from "./commands/cleanup.js";
 import { doctor } from "./commands/doctor.js";
@@ -83,6 +84,21 @@ program
   .description("Bridge MCP stdio to SSE (for Serena)")
   .action((url) => {
     bridge(url).catch(console.error);
+  });
+
+program
+  .command("agent:spawn <agent-id> <prompt-file> <session-id> <workspace>")
+  .description("Spawn a subagent (wraps gemini with logging and PID tracking)")
+  .action((agentId, promptFile, sessionId, workspace) => {
+    spawnAgent(agentId, promptFile, sessionId, workspace).catch(console.error);
+  });
+
+program
+  .command("agent:status <session-id> [agent-ids...]")
+  .description("Check status of subagents")
+  .option("-r, --root <path>", "Root path for memory checks", process.cwd())
+  .action((sessionId, agentIds, options) => {
+    checkStatus(sessionId, agentIds, options.root).catch(console.error);
   });
 
 program.parse();

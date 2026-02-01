@@ -27,6 +27,7 @@ description: Automated CLI-based parallel agent execution — spawn subagents vi
 ## Step 1: Load or Create Plan
 
 Check if `.agent/plan.json` exists.
+
 - If yes: load it and proceed to Step 2.
 - If no: ask the user to run `/plan` first, or ask them to describe the tasks to execute.
 - **Do NOT proceed without a plan.**
@@ -36,9 +37,11 @@ Check if `.agent/plan.json` exists.
 ## Step 2: Initialize Session
 
 // turbo
+
 1. 설정 파일 로드:
    - `.agent/config/user-preferences.yaml` (언어, CLI 매핑)
 2. CLI 매핑 현황 표시:
+
    ```
    📋 CLI 에이전트 매핑
    ┌──────────┬─────────┐
@@ -50,6 +53,7 @@ Check if `.agent/plan.json` exists.
    │ pm       │ claude  │
    └──────────┴─────────┘
    ```
+
 3. Generate session ID (format: `session-YYYYMMDD-HHMMSS`).
 4. Use memory write tool to create `orchestrator-session.md` and `task-board.md` in the memory base path.
 5. Set session status to RUNNING.
@@ -60,7 +64,8 @@ Check if `.agent/plan.json` exists.
 
 // turbo
 For each priority tier (P0 first, then P1, etc.):
-- Spawn agents using `gemini -p "{prompt}" --approval-mode=yolo` (max 3 parallel).
+
+- Spawn agents using `oh-my-ag agent:spawn {agent_id} {prompt_file} {session_id} {workspace}`.
 - Each agent gets: task description, API contracts, relevant context from `_shared/context-loading.md`.
 - Use memory edit tool to update `task-board.md` with agent status.
 
@@ -68,9 +73,11 @@ For each priority tier (P0 first, then P1, etc.):
 
 ## Step 4: Monitor Progress
 
-Use memory read tool to poll `progress-{agent}.md` every 30 seconds.
+Use `oh-my-ag agent:status {session_id} {agent_id}` to check process health.
+Also use memory read tool to poll `progress-{agent}.md` for logic updates.
+
 - Use memory edit tool to update `task-board.md` with turn counts and status changes.
-- Watch for: completion, failures, crashes (no update for 5 minutes).
+- Watch for: completion, failures, crashes.
 
 ---
 
@@ -78,9 +85,11 @@ Use memory read tool to poll `progress-{agent}.md` every 30 seconds.
 
 // turbo
 For each completed agent, run automated verification:
+
 ```
 bash .agent/skills/_shared/verify.sh {agent-type} {workspace}
 ```
+
 - PASS (exit 0): accept result.
 - FAIL (exit 1): re-spawn with error context (max 2 retries).
 
@@ -97,6 +106,7 @@ Compile summary: completed tasks, failed tasks, files changed, remaining issues.
 ## Step 7: Final Report
 
 Present session summary to the user.
+
 - If any tasks failed after retries, list them with error details.
 - Suggest next steps: manual fix, re-run specific agents, or run `/review` for QA.
 - Use memory write tool to record final results.

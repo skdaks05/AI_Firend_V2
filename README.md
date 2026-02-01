@@ -195,11 +195,11 @@ For programmatic parallel execution:
 
 ```bash
 # Single agent
-./scripts/spawn-subagent.sh backend "Implement auth API" ./backend
+oh-my-ag agent:spawn backend "Implement auth API" session-01 ./backend
 
 # Parallel agents via orchestrator skill
-./scripts/spawn-subagent.sh backend "Implement auth API" ./backend &
-./scripts/spawn-subagent.sh frontend "Create login form" ./frontend &
+oh-my-ag agent:spawn backend "Implement auth API" session-01 ./backend &
+oh-my-ag agent:spawn frontend "Create login form" session-01 ./frontend &
 wait
 ```
 
@@ -341,9 +341,6 @@ Features:
 │       #     └── snippets.md           (copy-paste patterns)
 ├── .serena/
 │   └── memories/                   # Runtime state (gitignored)
-├── scripts/
-│   ├── spawn-subagent.sh           # Sub-agent spawner
-│   └── poll-status.sh              # Status polling
 ├── package.json
 ├── README.md                       # This file (English)
 ├── README.ko.md                    # Korean guide
@@ -443,7 +440,13 @@ Each skill provides domain-specific resources:
 - **Google Antigravity** (2026+)
 - **Bun** (for CLI and dashboards)
 
-For SubAgent Orchestrator, at least one CLI tool:
+To use the core tools, install the package globally:
+
+```bash
+bun install --global oh-my-ag
+```
+
+For SubAgent Orchestrator, you'll also need at least one CLI tool:
 
 | CLI | Install | Auth |
 |-----|---------|------|

@@ -24,7 +24,11 @@
     "bug-fixing",
     "gemini"
   ],
-  "author": "",
+  "author": "our.first.fluke <our.first.fluke@gmail.com>",
+  "contributors": [
+    "gracefullight <gracefullight.dev@gmail.com>",
+    "gahyun-git <go4it.gh@gmail.com>"
+  ],
   "license": "MIT",
   "funding": [
     {

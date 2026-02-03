@@ -5,6 +5,7 @@ import { bridge } from "./commands/bridge.js";
 import { cleanup } from "./commands/cleanup.js";
 import { doctor } from "./commands/doctor.js";
 import { install } from "./commands/install.js";
+import { initMemory } from "./commands/memory.js";
 import { retro } from "./commands/retro.js";
 import { stats } from "./commands/stats.js";
 import { update } from "./commands/update.js";
@@ -89,8 +90,15 @@ program
 program
   .command("agent:spawn <agent-id> <prompt-file> <session-id> <workspace>")
   .description("Spawn a subagent (wraps gemini with logging and PID tracking)")
-  .action((agentId, promptFile, sessionId, workspace) => {
-    spawnAgent(agentId, promptFile, sessionId, workspace).catch(console.error);
+  .option("-v, --vendor <vendor>", "CLI vendor override (gemini/claude/codex/qwen)")
+  .action((agentId, promptFile, sessionId, workspace, options) => {
+    spawnAgent(
+      agentId,
+      promptFile,
+      sessionId,
+      workspace,
+      options.vendor,
+    ).catch(console.error);
   });
 
 program
@@ -99,6 +107,15 @@ program
   .option("-r, --root <path>", "Root path for memory checks", process.cwd())
   .action((sessionId, agentIds, options) => {
     checkStatus(sessionId, agentIds, options.root).catch(console.error);
+  });
+
+program
+  .command("memory:init")
+  .description("Initialize Serena memory schema in .serena/memories")
+  .option("--json", "Output as JSON")
+  .option("--force", "Overwrite empty or existing schema files")
+  .action((options) => {
+    initMemory(options.json, options.force).catch(console.error);
   });
 
 program.parse();

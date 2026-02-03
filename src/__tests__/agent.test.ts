@@ -63,8 +63,19 @@ describe("agent command", () => {
     });
 
     it("should spawn process and write PID", async () => {
-      mockFsFunctions.existsSync.mockReturnValue(true);
-      mockFsFunctions.readFileSync.mockReturnValue("prompt content");
+      mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("user-preferences.yaml")) return false;
+        if (target.includes("cli-config.yaml")) return false;
+        if (target.includes("prompt.md")) return true;
+        if (target === "/tmp") return true;
+        return true;
+      });
+      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("prompt.md")) return "prompt content";
+        return "";
+      });
       mockFsFunctions.openSync.mockReturnValue(123);
 
       const mockChild = {

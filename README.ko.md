@@ -466,6 +466,7 @@ bunx oh-my-ag update         # 스킬을 최신 버전으로 업데이트
 bunx oh-my-ag stats          # 생산성 메트릭 조회
 bunx oh-my-ag stats --reset  # 메트릭 초기화
 bunx oh-my-ag retro          # 세션 회고 (배운 점 & 다음 단계)
+bunx oh-my-ag memory:init    # Serena 메모리 스키마 초기화
 bunx oh-my-ag dashboard      # 터미널 실시간 대시보드
 bunx oh-my-ag dashboard:web  # 웹 대시보드 (http://localhost:9847)
 bunx oh-my-ag dashboard:web  # 웹 대시보드 (http://localhost:9847)

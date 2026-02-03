@@ -493,6 +493,7 @@ bunx oh-my-ag update         # Update skills to latest version
 bunx oh-my-ag stats          # View productivity metrics
 bunx oh-my-ag stats --reset  # Reset metrics
 bunx oh-my-ag retro          # Session retrospective (learnings & next steps)
+bunx oh-my-ag memory:init    # Initialize Serena memory schema
 bunx oh-my-ag dashboard      # Terminal real-time dashboard
 bunx oh-my-ag dashboard:web  # Web dashboard (http://localhost:9847)
 bunx oh-my-ag dashboard:web  # Web dashboard (http://localhost:9847)

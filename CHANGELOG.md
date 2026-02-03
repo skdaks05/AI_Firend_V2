@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.5.8...oh-my-ag-v1.6.0) (2026-02-03)
+
+
+### Features
+
+* improve cli config parsing and memory tooling ([9322a6b](https://github.com/first-fluke/oh-my-ag/commit/9322a6bdc411c437b1f1e6ef3d93c15aa6222187))
+
+
+### Miscellaneous
+
+* update prompt-manifest.json for 1.5.8 ([2d1d3b1](https://github.com/first-fluke/oh-my-ag/commit/2d1d3b149538758ec84cc6dc1059304f6fccba98))
+
 ## [1.5.8](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.5.7...oh-my-ag-v1.5.8) (2026-02-02)
 
 

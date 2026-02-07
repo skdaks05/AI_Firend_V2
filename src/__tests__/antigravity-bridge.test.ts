@@ -65,12 +65,15 @@ describe("antigravity-bridge", () => {
       expect(result.userName).toBe("Unknown");
       expect(result.email).toBe("");
       expect(result.planName).toBe("Free");
+      expect(result.tierName).toBe("");
       expect(result.promptCredits).toBeUndefined();
+      expect(result.flowCredits).toBeUndefined();
       expect(result.models).toEqual([]);
+      expect(result.defaultModel).toBeNull();
       expect(result.timestamp).toBeInstanceOf(Date);
     });
 
-    it("should parse user info", () => {
+    it("should parse user info and tier", () => {
       const data: RpcResponse = {
         userStatus: {
           name: "TestUser",
@@ -78,12 +81,14 @@ describe("antigravity-bridge", () => {
           planStatus: {
             planInfo: { planName: "Pro" },
           },
+          userTier: { name: "Google AI Pro" },
         },
       };
       const result = parseQuota(data);
       expect(result.userName).toBe("TestUser");
       expect(result.email).toBe("test@example.com");
       expect(result.planName).toBe("Pro");
+      expect(result.tierName).toBe("Google AI Pro");
     });
 
     it("should calculate prompt credits correctly", () => {

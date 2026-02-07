@@ -43,8 +43,9 @@ program
   .command("usage")
   .description("Show model usage quotas (connects to local Antigravity IDE)")
   .option("--json", "Output as JSON")
+  .option("--raw", "Dump raw RPC response")
   .action((options) => {
-    usage(options.json).catch(console.error);
+    usage(options.json, options.raw).catch(console.error);
   });
 
 program

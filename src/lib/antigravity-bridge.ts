@@ -8,19 +8,25 @@ export interface ModelQuota {
   isExhausted: boolean;
   resetTime: Date | null;
   timeUntilReset: string;
+  supportsImages: boolean;
+}
+
+interface CreditInfo {
+  available: number;
+  monthly: number;
+  usedPercent: number;
+  remainingPercent: number;
 }
 
 export interface QuotaSnapshot {
   userName: string;
   email: string;
   planName: string;
-  promptCredits?: {
-    available: number;
-    monthly: number;
-    usedPercent: number;
-    remainingPercent: number;
-  };
+  tierName: string;
+  promptCredits?: CreditInfo;
+  flowCredits?: CreditInfo;
   models: ModelQuota[];
+  defaultModel: string | null;
   timestamp: Date;
 }
 
@@ -190,6 +196,7 @@ export interface RpcModelConfig {
   label?: string;
   modelOrAlias?: { model?: string };
   quotaInfo?: RpcQuotaInfo;
+  supportsImages?: boolean;
 }
 
 interface RpcUserStatus {
@@ -199,11 +206,19 @@ interface RpcUserStatus {
     planInfo?: {
       planName?: string;
       monthlyPromptCredits?: number;
+      monthlyFlowCredits?: number;
     };
     availablePromptCredits?: number;
+    availableFlowCredits?: number;
   };
   cascadeModelConfigData?: {
     clientModelConfigs?: RpcModelConfig[];
+    defaultOverrideModelConfig?: {
+      modelOrAlias?: { model?: string };
+    };
+  };
+  userTier?: {
+    name?: string;
   };
 }
 
@@ -211,24 +226,34 @@ export interface RpcResponse {
   userStatus?: RpcUserStatus;
 }
 
+function calcCredits(
+  monthly: number | undefined,
+  available: number | undefined,
+): CreditInfo | undefined {
+  if (!monthly || available === undefined) return undefined;
+  const m = Number(monthly);
+  const a = Number(available);
+  if (m <= 0) return undefined;
+  return {
+    available: a,
+    monthly: m,
+    usedPercent: ((m - a) / m) * 100,
+    remainingPercent: (a / m) * 100,
+  };
+}
+
 export function parseQuota(data: RpcResponse): QuotaSnapshot {
   const userStatus = data.userStatus ?? {};
   const planInfo = userStatus.planStatus?.planInfo ?? {};
-  const availableCredits = userStatus.planStatus?.availablePromptCredits;
 
-  let promptCredits: QuotaSnapshot["promptCredits"];
-  if (planInfo.monthlyPromptCredits && availableCredits !== undefined) {
-    const monthly = Number(planInfo.monthlyPromptCredits);
-    const available = Number(availableCredits);
-    if (monthly > 0) {
-      promptCredits = {
-        available,
-        monthly,
-        usedPercent: ((monthly - available) / monthly) * 100,
-        remainingPercent: (available / monthly) * 100,
-      };
-    }
-  }
+  const promptCredits = calcCredits(
+    planInfo.monthlyPromptCredits,
+    userStatus.planStatus?.availablePromptCredits,
+  );
+  const flowCredits = calcCredits(
+    planInfo.monthlyFlowCredits,
+    userStatus.planStatus?.availableFlowCredits,
+  );
 
   const rawModels = userStatus.cascadeModelConfigData?.clientModelConfigs ?? [];
   const models: ModelQuota[] = rawModels
@@ -257,15 +282,23 @@ export function parseQuota(data: RpcResponse): QuotaSnapshot {
         isExhausted: m.quotaInfo.remainingFraction === 0,
         resetTime,
         timeUntilReset: formatTimeUntilReset(diff),
+        supportsImages: m.supportsImages ?? false,
       };
     });
+
+  const defaultModel =
+    userStatus.cascadeModelConfigData?.defaultOverrideModelConfig?.modelOrAlias
+      ?.model ?? null;
 
   return {
     userName: userStatus.name || "Unknown",
     email: userStatus.email || "",
     planName: planInfo.planName || "Free",
+    tierName: userStatus.userTier?.name || "",
     promptCredits,
+    flowCredits,
     models,
+    defaultModel,
     timestamp: new Date(),
   };
 }
@@ -304,6 +337,30 @@ export async function getQuota(
       },
     );
     return parseQuota(data);
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchRawResponse(): Promise<Record<
+  string,
+  unknown
+> | null> {
+  const conn = await connect();
+  if (!conn) return null;
+  try {
+    return await makeRequest(
+      conn.port,
+      "/exa.language_server_pb.LanguageServerService/GetUserStatus",
+      conn.csrfToken,
+      {
+        metadata: {
+          ideName: "antigravity",
+          extensionName: "antigravity",
+          locale: "en",
+        },
+      },
+    );
   } catch {
     return null;
   }

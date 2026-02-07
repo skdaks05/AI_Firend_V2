@@ -2,6 +2,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import {
   fetchQuota,
+  fetchRawResponse,
   type ModelQuota,
   type QuotaSnapshot,
 } from "../lib/antigravity-bridge.js";
@@ -25,39 +26,70 @@ function renderBar(percent: number): string {
 function formatModelRow(model: ModelQuota): string {
   const pct = model.remainingPercent.toFixed(0).padStart(4);
   const bar = renderBar(model.remainingPercent);
-  const label = model.label.padEnd(22);
+  const img = model.supportsImages ? pc.dim(" img") : "";
+  const label = model.label.padEnd(26);
   const reset = model.isExhausted
     ? pc.red(`resets ${model.timeUntilReset}`)
     : model.timeUntilReset !== "Ready"
       ? pc.dim(`resets ${model.timeUntilReset}`)
       : "";
-  return `  ${label} ${bar} ${pct}% ${reset}`;
+  return `  ${label} ${bar} ${pct}%${img} ${reset}`;
+}
+
+function renderCreditBar(
+  _label: string,
+  credits: { available: number; monthly: number; remainingPercent: number },
+): string {
+  const bar = renderBar(credits.remainingPercent);
+  const pct = credits.remainingPercent.toFixed(0).padStart(4);
+  const detail = `${credits.available.toLocaleString()} / ${credits.monthly.toLocaleString()}`;
+  return [`  ${bar} ${pct}%`, `  ${pc.dim(detail)}`].join("\n");
 }
 
 function renderChart(snapshot: QuotaSnapshot): void {
   console.clear();
   p.intro(pc.bgCyan(pc.black(" oh-my-ag usage ")));
 
-  const header = [
+  const headerLines = [
     `${pc.bold("User")}  ${snapshot.userName}${snapshot.email ? ` (${pc.dim(snapshot.email)})` : ""}`,
-    `${pc.bold("Plan")}  ${snapshot.planName}`,
-  ].join("\n");
-  p.note(header, "Account");
+    `${pc.bold("Plan")}  ${snapshot.planName}${snapshot.tierName ? ` ${pc.dim(`(${snapshot.tierName})`)}` : ""}`,
+  ];
+  if (snapshot.defaultModel) {
+    const defaultLabel = snapshot.models.find(
+      (m) => m.modelId === snapshot.defaultModel,
+    )?.label;
+    if (defaultLabel) {
+      headerLines.push(`${pc.bold("Default")}  ${defaultLabel}`);
+    }
+  }
+  p.note(headerLines.join("\n"), "Account");
 
-  if (snapshot.promptCredits) {
-    const c = snapshot.promptCredits;
-    const bar = renderBar(c.remainingPercent);
-    const pct = c.remainingPercent.toFixed(0).padStart(4);
-    const detail = `${c.available.toLocaleString()} / ${c.monthly.toLocaleString()} credits`;
-    const creditLines = [`  ${bar} ${pct}%`, `  ${pc.dim(detail)}`].join("\n");
-    p.note(creditLines, "Prompt Credits");
+  if (snapshot.promptCredits || snapshot.flowCredits) {
+    const creditLines: string[] = [];
+    if (snapshot.promptCredits) {
+      creditLines.push(
+        pc.bold("  Prompt"),
+        renderCreditBar("Prompt", snapshot.promptCredits),
+      );
+    }
+    if (snapshot.flowCredits) {
+      if (creditLines.length > 0) creditLines.push("");
+      creditLines.push(
+        pc.bold("  Flow"),
+        renderCreditBar("Flow", snapshot.flowCredits),
+      );
+    }
+    p.note(creditLines.join("\n"), "Credits");
   }
 
   if (snapshot.models.length === 0) {
     p.note(pc.dim("  No model quota data available"), "Models");
   } else {
-    const exhausted = snapshot.models.filter((m) => m.isExhausted);
-    const available = snapshot.models.filter((m) => !m.isExhausted);
+    const sorted = [...snapshot.models].sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
+    const exhausted = sorted.filter((m) => m.isExhausted);
+    const available = sorted.filter((m) => !m.isExhausted);
 
     const lines: string[] = [];
 
@@ -81,7 +113,17 @@ function renderChart(snapshot: QuotaSnapshot): void {
   p.outro(pc.dim(`Updated ${snapshot.timestamp.toLocaleTimeString()}`));
 }
 
-export async function usage(jsonMode = false): Promise<void> {
+export async function usage(jsonMode = false, rawMode = false): Promise<void> {
+  if (rawMode) {
+    const data = await fetchRawResponse();
+    if (!data) {
+      console.error("Failed to connect to Antigravity");
+      process.exit(1);
+    }
+    console.log(JSON.stringify(data, null, 2));
+    return;
+  }
+
   if (!jsonMode) {
     const spinner = p.spinner();
     spinner.start("Connecting to Antigravity...");
@@ -120,15 +162,21 @@ export async function usage(jsonMode = false): Promise<void> {
         userName: snapshot.userName,
         email: snapshot.email,
         planName: snapshot.planName,
+        tierName: snapshot.tierName || null,
         promptCredits: snapshot.promptCredits ?? null,
-        models: snapshot.models.map((m) => ({
-          label: m.label,
-          modelId: m.modelId,
-          remainingPercent: m.remainingPercent,
-          isExhausted: m.isExhausted,
-          resetTime: m.resetTime?.toISOString() ?? null,
-          timeUntilReset: m.timeUntilReset,
-        })),
+        flowCredits: snapshot.flowCredits ?? null,
+        defaultModel: snapshot.defaultModel,
+        models: [...snapshot.models]
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .map((m) => ({
+            label: m.label,
+            modelId: m.modelId,
+            remainingPercent: m.remainingPercent,
+            isExhausted: m.isExhausted,
+            supportsImages: m.supportsImages,
+            resetTime: m.resetTime?.toISOString() ?? null,
+            timeUntilReset: m.timeUntilReset,
+          })),
         timestamp: snapshot.timestamp.toISOString(),
       },
       null,

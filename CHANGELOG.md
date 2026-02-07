@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.9.0](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.8.1...oh-my-ag-v1.9.0) (2026-02-07)
+
+
+### Features
+
+* add usage command with model quota bar chart ([a6ddff2](https://github.com/first-fluke/oh-my-ag/commit/a6ddff2715e79e42083cc29eaecb154c79edaa97))
+* **usage:** add flow credits, tier, default model, image support info ([b20224c](https://github.com/first-fluke/oh-my-ag/commit/b20224c94518f4c02e6a2dff6db3e4ab7a56b39e))
+
+
+### Documentation
+
+* add usage command to CLI Commands section ([7d89582](https://github.com/first-fluke/oh-my-ag/commit/7d89582eaf7799c0aeecb47b41c427a4ee4286b7))
+
+
+### Miscellaneous
+
+* update prompt-manifest.json for 1.8.1 ([f3d6ca7](https://github.com/first-fluke/oh-my-ag/commit/f3d6ca71a78fb6185dcd1e0c54e61ec3b74d2c08))
+
 ## [1.8.1](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.8.0...oh-my-ag-v1.8.1) (2026-02-04)
 
 

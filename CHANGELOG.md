@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.12.1](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.12.0...oh-my-ag-v1.12.1) (2026-02-08)
+
+
+### Bug Fixes
+
+* **commit:** update co_author to First Fluke ([23fbc34](https://github.com/first-fluke/oh-my-ag/commit/23fbc34e527f050c956acf545e3f354999c20053))
+
+
+### Miscellaneous
+
+* update prompt-manifest.json for 1.12.0 ([0473580](https://github.com/first-fluke/oh-my-ag/commit/04735801f9df955c32fafbeb6497b3e28076f02a))
+
 ## [1.12.0](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.11.0...oh-my-ag-v1.12.0) (2026-02-08)
 
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.12.2](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.12.1...oh-my-ag-v1.12.2) (2026-02-08)
+
+
+### Documentation
+
+* add Buy Me a Coffee badge to sponsor sections ([641302e](https://github.com/first-fluke/oh-my-ag/commit/641302e774b5a32c705268ec36eb2aab4bb4c4f9))
+* add sponsors section and SPONSORS.md ([507303a](https://github.com/first-fluke/oh-my-ag/commit/507303a0be7577dc7c3f5aa6c1b2514af160fc11))
+
+
+### Miscellaneous
+
+* update prompt-manifest.json for 1.12.1 ([0fcfae4](https://github.com/first-fluke/oh-my-ag/commit/0fcfae4ddaf48c555d08fef9e4fcdc749e461bbc))
+
 ## [1.12.1](https://github.com/first-fluke/oh-my-ag/compare/oh-my-ag-v1.12.0...oh-my-ag-v1.12.1) (2026-02-08)
 
 

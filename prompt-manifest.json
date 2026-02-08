@@ -1,7 +1,7 @@
 {
   "name": "oh-my-ag",
   "version": "1.14.0",
-  "releaseDate": "2026-02-08T09:46:51.710Z",
+  "releaseDate": "2026-02-08T13:43:20.417Z",
   "repository": "https://github.com/first-fluke/oh-my-ag",
   "files": [
     {
@@ -51,8 +51,8 @@
     },
     {
       "path": ".agent/skills/_shared/lessons-learned.md",
-      "sha256": "044df97f47fb1d7492b8bdb2f180134256335d9737df4831f723f0bba3abd0df",
-      "size": 5189
+      "sha256": "8724fd877a32ce17ea7fbe1e4b655cb8319d3483847c330572f00bcbd62c409d",
+      "size": 6170
     },
     {
       "path": ".agent/skills/_shared/memory-protocol.md",
@@ -65,14 +65,14 @@
       "size": 4826
     },
     {
+      "path": ".agent/skills/_shared/session-metrics.md",
+      "sha256": "f7c4dc7f7e3cc6f6c8fe481012a966d4c6f2d21082cf1f91ee9b095968b42e12",
+      "size": 4676
+    },
+    {
       "path": ".agent/skills/_shared/skill-routing.md",
       "sha256": "2274edddacf3b08b923f61b65e0679f57d437759f16e0b56749fa4344001cd9c",
       "size": 3053
-    },
-    {
-      "path": ".agent/skills/_shared/verify.sh",
-      "sha256": "abf4a2cd53b70fd4166726faa59c375716baac86b7fdc73e3d6d584d20ecd3cd",
-      "size": 7833
     },
     {
       "path": ".agent/skills/backend-agent/SKILL.md",
@@ -256,8 +256,8 @@
     },
     {
       "path": ".agent/skills/orchestrator/SKILL.md",
-      "sha256": "1ef5300b76941444b458a7f43219535d35eb1d4365ed30909db5245a12c6b9bd",
-      "size": 4006
+      "sha256": "c124f6252db3514ff25a83279c33eb531744f2f46b43d7185c393b4e998c1365",
+      "size": 5115
     },
     {
       "path": ".agent/skills/orchestrator/config/cli-config.yaml",
@@ -271,8 +271,8 @@
     },
     {
       "path": ".agent/skills/orchestrator/resources/subagent-prompt-template.md",
-      "sha256": "b19332a9a8948edf5d8a2e495fcebca4c0aeeabe203881d83c4153743561c332",
-      "size": 4362
+      "sha256": "7379cee06482b91258bfe27a1464352c9274c6984c149820fbef8de3d07fc3cc",
+      "size": 5505
     },
     {
       "path": ".agent/skills/orchestrator/scripts/parallel-run.sh",

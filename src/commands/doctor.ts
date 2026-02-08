@@ -405,6 +405,11 @@ export async function doctor(jsonMode = false): Promise<void> {
         pc.yellow(`⚠️  Found ${totalIssues} issue(s). See details above.`),
       );
     }
+
+    p.note(
+      `${pc.yellow("❤️")} Enjoying oh-my-ag? Give it a star or sponsor!\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-ag")}\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
+      "Support",
+    );
   } catch (error) {
     if (spinner) spinner.stop("Check failed");
     p.log.error(error instanceof Error ? error.message : String(error));

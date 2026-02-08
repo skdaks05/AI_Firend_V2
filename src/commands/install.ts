@@ -87,13 +87,6 @@ export async function install(): Promise<void> {
       "Installed",
     );
 
-    p.outro(pc.green("Done! Open your project in your IDE to use the skills."));
-
-    p.note(
-      `${pc.yellow("❤️")} Enjoying oh-my-ag? Give it a star!\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-ag")}`,
-      "Support",
-    );
-
     // --- Git rerere Setup ---
     try {
       const rerereEnabled = execSync("git config --get rerere.enabled", {
@@ -232,6 +225,13 @@ export async function install(): Promise<void> {
         }
       }
     }
+
+    p.outro(pc.green("Done! Open your project in your IDE to use the skills."));
+
+    p.note(
+      `${pc.yellow("❤️")} Enjoying oh-my-ag? Give it a star or sponsor!\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-ag")}\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
+      "Support",
+    );
   } catch (error) {
     spinner.stop("Installation failed");
     p.log.error(error instanceof Error ? error.message : String(error));

@@ -5,6 +5,8 @@ description: Full usage guide including examples, workflows, dashboard operation
 
 # How to Use Antigravity Multi-Agent Skills
 
+> If you are not sure where to start, type `/coordinate <your task prompt>` first.
+
 ## Quick Start
 
 1. **Open in Antigravity IDE**
@@ -264,10 +266,10 @@ Browser:    http://localhost:9847 → real-time status
 
 | Problem | Solution |
 |---------|----------|
-| Skills not loading | `antigravity open .`, check `.agent/skills/`, restart IDE |
+| Skills not loading in Antigravity | Open project with `antigravity open .`, verify `.agent/skills/` and `SKILL.md`, then restart Antigravity IDE |
 | CLI not found | Check `which gemini` / `which claude`, install missing CLIs |
-| Incompatible agent outputs | Review both in Knowledge Base, re-spawn with corrections |
-| Dashboard: "No agents" | Memory files not created yet, run orchestrator first |
+| Agents producing incompatible code | Review outputs in `.gemini/antigravity/brain/`, re-spawn one agent referencing the other agent output, then use QA Agent for final consistency check |
+| Dashboard shows "No agents detected" | Memory files have not been created yet. Run the orchestrator or manually create files in `.serena/memories/` |
 | Web dashboard won't start | Run `bun install` to install chokidar and ws |
 | fswatch not found | macOS: `brew install fswatch`, Linux: `apt install inotify-tools` |
 | QA report has 50+ issues | Focus on CRITICAL/HIGH first, document rest for later |

@@ -5,6 +5,8 @@ description: 예시, 워크플로우, 대시보드 운영, 문제 해결을 포�
 
 # Antigravity 멀티 에이전트 스킬 사용 가이드
 
+> 아무것도 모르겠으면 `/coordinate <원하는 작업 프롬프트>`부터 입력하세요.
+
 ## 빠른 시작
 
 1. **Antigravity IDE에서 열기**
@@ -263,10 +265,10 @@ Antigravity IDE 채팅에서 입력하여 단계별 워크플로우를 실행합
 
 | 문제 | 해결법 |
 |------|--------|
-| 스킬이 로드되지 않음 | `antigravity open .`, `.agent/skills/` 확인, IDE 재시작 |
+| Antigravity에서 스킬이 로드되지 않음 | `antigravity open .`으로 프로젝트를 열고, `.agent/skills/` 폴더와 `SKILL.md` 파일을 확인한 뒤 Antigravity IDE를 재시작하세요 |
 | CLI를 찾을 수 없음 | `which gemini` / `which claude` 확인, 누락된 CLI 설치 |
-| 에이전트 산출물이 호환되지 않음 | Knowledge Base에서 둘 다 검토, 수정하여 재생성 |
-| 대시보드: "No agents" 표시 | 메모리 파일이 아직 생성되지 않음, orchestrator 실행 필요 |
+| 에이전트 간 코드 불일치 | `.gemini/antigravity/brain/`에서 산출물을 검토하고, 한 에이전트를 다른 에이전트 출력 참조로 재실행한 뒤 QA Agent로 최종 일관성을 점검하세요 |
+| 대시보드에 "No agents detected" 표시 | 메모리 파일이 아직 생성되지 않았습니다. Orchestrator를 실행하거나 `.serena/memories/`에 수동으로 파일을 생성하세요 |
 | 웹 대시보드가 시작 안 됨 | `bun install`로 chokidar, ws 설치 |
 | fswatch not found | macOS: `brew install fswatch`, Linux: `apt install inotify-tools` |
 | QA 리포트에 50개 이상 이슈 | CRITICAL/HIGH부터 처리, 나머지는 문서화 후 나중에 |

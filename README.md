@@ -29,8 +29,6 @@ Orchestrate 6 specialized domain agents (PM, Frontend, Backend, Mobile, QA, Debu
 - [Real-time Dashboards](#real-time-dashboards)
 - [Skill Architecture](#skill-architecture)
 - [CLI Commands](#cli-commands)
-- [Troubleshooting](#troubleshooting)
-- [Central Registry](#central-registry-for-multi-repo-setup)
 - [Sponsors](#sponsors)
 - [License](#license)
 
@@ -358,31 +356,12 @@ bunx oh-my-ag update         # Update skills to latest version
 bunx oh-my-ag usage          # Show model usage quotas
 ```
 
-## Troubleshooting
+Troubleshooting and multi-repo registry docs are now in the web guide:
 
-### Dashboard shows "No agents detected"
-
-Memory files haven't been created yet. Run the orchestrator or manually create files in `.serena/memories/`.
-
-### Skills not loading in Antigravity
-
-1. Open project with `antigravity open .`
-2. Verify `.agent/skills/` folder and `SKILL.md` files exist
-3. Restart Antigravity IDE
-
-### Agents producing incompatible code
-
-1. Review outputs in `.gemini/antigravity/brain/`
-2. Re-spawn one agent referencing the other's output
-3. Use QA Agent for final consistency check
-
-## Central Registry (For Multi-Repo Setup)
-
-Moved to Guide:
-
-- Content source (EN): [`web/content/en/guide/central-registry.md`](./web/content/en/guide/central-registry.md)
-- Content source (KO): [`web/content/ko/guide/central-registry.md`](./web/content/ko/guide/central-registry.md)
-- Docs site: `/en/guide/central-registry/` and `/ko/guide/central-registry/`
+- Usage guide (EN): [`web/content/en/guide/usage.md`](./web/content/en/guide/usage.md)
+- Usage guide (KO): [`web/content/ko/guide/usage.md`](./web/content/ko/guide/usage.md)
+- Central registry (EN): [`web/content/en/guide/central-registry.md`](./web/content/en/guide/central-registry.md)
+- Central registry (KO): [`web/content/ko/guide/central-registry.md`](./web/content/ko/guide/central-registry.md)
 
 ## Sponsors
 

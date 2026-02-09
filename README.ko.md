@@ -27,9 +27,6 @@ Google Antigravity를 위한 궁극의 멀티 에이전트 프레임워크.
 - [실시간 대시보드](#실시간-대시보드)
 - [스킬 아키텍처](#스킬-아키텍처)
 - [CLI 명령어](#cli-명령어)
-- [문제 해결](#문제-해결)
-- [후원하기](#후원하기)
-- [중앙 레지스트리](#중앙-레지스트리-멀티-레포-설정용)
 - [후원하기](#후원하기)
 - [라이선스](#라이선스)
 
@@ -366,31 +363,12 @@ bunx oh-my-ag update         # 스킬을 최신 버전으로 업데이트
 bunx oh-my-ag usage          # 모델 사용량 쿼터 조회
 ```
 
-## 문제 해결
+문제 해결과 멀티-레포 중앙 레지스트리 문서는 웹 가이드로 이동했습니다:
 
-### 대시보드에 "No agents detected" 표시
-
-메모리 파일이 아직 생성되지 않았습니다. Orchestrator를 실행하거나 `.serena/memories/`에 수동으로 파일을 생성하세요.
-
-### Antigravity에서 스킬이 로드되지 않음
-
-1. `antigravity open .`으로 프로젝트 열기
-2. `.agent/skills/` 폴더와 `SKILL.md` 파일 확인
-3. Antigravity IDE 재시작
-
-### 에이전트 간 코드 불일치
-
-1. `.gemini/antigravity/brain/`에서 산출물 검토
-2. 다른 에이전트의 산출물을 참조하여 재생성
-3. QA Agent로 최종 일관성 검사
-
-## 중앙 레지스트리 (멀티-레포 설정용)
-
-Guide 문서로 이동했습니다:
-
-- 원문(EN): [`web/content/en/guide/central-registry.md`](./web/content/en/guide/central-registry.md)
-- 원문(KO): [`web/content/ko/guide/central-registry.md`](./web/content/ko/guide/central-registry.md)
-- 문서 사이트: `/en/guide/central-registry/`, `/ko/guide/central-registry/`
+- 사용 가이드 (EN): [`web/content/en/guide/usage.md`](./web/content/en/guide/usage.md)
+- 사용 가이드 (KO): [`web/content/ko/guide/usage.md`](./web/content/ko/guide/usage.md)
+- 중앙 레지스트리 (EN): [`web/content/en/guide/central-registry.md`](./web/content/en/guide/central-registry.md)
+- 중앙 레지스트리 (KO): [`web/content/ko/guide/central-registry.md`](./web/content/ko/guide/central-registry.md)
 
 ## 후원하기
 

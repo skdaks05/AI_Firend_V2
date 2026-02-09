@@ -1,5 +1,5 @@
 ---
-title: Use Case: Dashboard Monitoring
+title: "Use Case: Dashboard Monitoring"
 description: Operate orchestrator sessions with terminal/web dashboards and actionable runbook signals.
 ---
 

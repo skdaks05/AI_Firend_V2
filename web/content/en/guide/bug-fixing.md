@@ -1,5 +1,5 @@
 ---
-title: Use Case: Bug Fixing
+title: "Use Case: Bug Fixing"
 description: Structured reproduce-diagnose-fix-regress loop with severity-based escalation.
 ---
 

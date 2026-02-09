@@ -1,5 +1,5 @@
 ---
-title: Use Case: Multi-Agent Project
+title: "Use Case: Multi-Agent Project"
 description: End-to-end flow for complex cross-domain delivery with explicit coordination gates.
 ---
 

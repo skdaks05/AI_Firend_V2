@@ -1,5 +1,5 @@
 ---
-title: Use Case: Single Skill
+title: "Use Case: Single Skill"
 description: Fast path for focused, single-domain work with clear scope and quick feedback loops.
 ---
 

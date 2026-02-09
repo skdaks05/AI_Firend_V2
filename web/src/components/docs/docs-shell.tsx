@@ -103,7 +103,7 @@ function Brand() {
         />
       </span>
       <span className="text-base font-semibold tracking-tight text-zinc-50">
-        oh-my-ag docs
+        oh-my-ag
       </span>
     </Link>
   );

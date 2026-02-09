@@ -293,7 +293,7 @@ bunx oh-my-ag help           # Show help
 
 ## For Developers (Integration Guide)
 
-If you want to integrate these skills into your existing Antigravity project, see [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md) for:
+If you want to integrate these skills into your existing Antigravity project, see [Existing Project Integration](./integration.md) for:
 - Quick 3-step integration
 - Full dashboard integration
 - Customizing skills for your tech stack
@@ -301,4 +301,4 @@ If you want to integrate these skills into your existing Antigravity project, se
 
 ---
 
-**Just chat in Antigravity IDE.** For monitoring, use the dashboards. For CLI execution, use the orchestrator scripts. To integrate into your existing project, see [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md).
+**Just chat in Antigravity IDE.** For monitoring, use the dashboards. For CLI execution, use the orchestrator scripts. To integrate into your existing project, use [Existing Project Integration](./integration.md).

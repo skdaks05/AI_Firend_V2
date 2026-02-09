@@ -485,18 +485,5 @@ See [SPONSORS.md](./SPONSORS.md) for a full list of supporters.
 
 MIT
 
-## Documentation
-
-| Document | Audience | Purpose |
-|----------|----------|---------|
-| [README.md](./README.md) | Users | Project overview (English) |
-| [README.ko.md](./README.ko.md) | Users | Project overview (Korean) |
-| [usage.md](./web/content/en/guide/usage.md) | Users | How to use the skills (English) |
-| [usage.ko.md](./web/content/ko/guide/usage.md) | Users | How to use the skills (Korean) |
-| [project-structure.md](./web/content/en/core-concepts/project-structure.md) | Users | Full project directory structure (English) |
-| [project-structure.ko.md](./web/content/ko/core-concepts/project-structure.md) | Users | Full project directory structure (Korean) |
-| [AGENT_GUIDE.md](./AGENT_GUIDE.md) | Developers | **How to integrate into your existing project** |
-
 ---
-
-**Built for Google Antigravity 2026** | **New to this project?** Start with [AGENT_GUIDE.md](./AGENT_GUIDE.md) to integrate into your existing project
+**Built for Google Antigravity 2026** | **Integration guide:** [EN](./web/content/en/guide/integration.md) · [KO](./web/content/ko/guide/integration.md)

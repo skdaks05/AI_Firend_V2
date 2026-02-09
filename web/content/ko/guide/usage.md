@@ -292,7 +292,7 @@ bunx oh-my-ag help           # 도움말 표시
 
 ## 개발자용 (통합 가이드)
 
-기존 Antigravity 프로젝트에 이 스킬들을 통합하고 싶다면 [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md)를 참고하세요. 다음을 포함합니다:
+기존 Antigravity 프로젝트에 이 스킬들을 통합하고 싶다면 [기존 프로젝트 통합](./integration.md)을 참고하세요. 다음을 포함합니다:
 - 빠른 3단계 통합
 - 전체 대시보드 통합
 - 본인 기술 스택에 맞게 스킬 커스터마이징
@@ -300,4 +300,4 @@ bunx oh-my-ag help           # 도움말 표시
 
 ---
 
-**Antigravity IDE에서 채팅하세요.** 모니터링을 위해 대시보드를 사용하고, CLI 실행을 위해 orchestrator 스크립트를 사용합니다. 기존 프로젝트에 통합하려면 [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md)를 참고하세요.
+**Antigravity IDE에서 채팅하세요.** 모니터링을 위해 대시보드를 사용하고, CLI 실행을 위해 orchestrator 스크립트를 사용합니다. 기존 프로젝트 통합은 [기존 프로젝트 통합](./integration.md)을 참고하세요.

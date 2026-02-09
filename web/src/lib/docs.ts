@@ -48,6 +48,7 @@ export const DOC_ORDER: Record<DocGroupId, string[]> = {
   ],
   guide: [
     "usage",
+    "integration",
     "single-skill",
     "multi-agent-project",
     "bug-fixing",

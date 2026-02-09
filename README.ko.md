@@ -493,18 +493,5 @@ bunx oh-my-ag usage          # 모델 사용량 쿼터 조회
 
 MIT
 
-## 문서
-
-| 문서 | 대상 | 용도 |
-|------|------|------|
-| [README.md](./README.md) | 사용자 | 프로젝트 개요 (영문) |
-| [README.ko.md](./README.ko.md) | 사용자 | 프로젝트 개요 (한글) |
-| [usage.md](./web/content/en/guide/usage.md) | 사용자 | 스킬 사용 방법 (영문) |
-| [usage.ko.md](./web/content/ko/guide/usage.md) | 사용자 | 스킬 사용 방법 (한글) |
-| [project-structure.md](./web/content/en/core-concepts/project-structure.md) | 사용자 | 전체 프로젝트 디렉토리 구조 (영문) |
-| [project-structure.ko.md](./web/content/ko/core-concepts/project-structure.md) | 사용자 | 전체 프로젝트 디렉토리 구조 (한글) |
-| [AGENT_GUIDE.md](./AGENT_GUIDE.md) | 개발자 | **기존 프로젝트에 통합하는 방법** |
-
 ---
-
-**Google Antigravity 2026용** | **처음이신가요?** [AGENT_GUIDE.md](./AGENT_GUIDE.md)에서 기존 프로젝트에 통합하는 방법을 확인하세요
+**Google Antigravity 2026용** | **통합 가이드:** [EN](./web/content/en/guide/integration.md) · [KO](./web/content/ko/guide/integration.md)

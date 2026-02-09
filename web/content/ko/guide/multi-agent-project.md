@@ -1,31 +1,76 @@
 ---
 title: 유즈케이스: 멀티 에이전트 프로젝트
-description: 복합 도메인 프로젝트의 엔드투엔드 실행 흐름.
+description: 복합 도메인 기능을 병렬로 안전하게 전달하기 위한 단계별 조율 흐름.
 ---
 
 # 유즈케이스: 멀티 에이전트 프로젝트
 
-## 시나리오
+## 언제 이 경로를 쓰나
 
-백엔드, 프론트엔드, QA가 동시에 필요한 기능.
+백엔드 + 프론트엔드 + QA처럼 여러 도메인이 동시에 필요한 기능에서 사용합니다.
 
-## 권장 순서
+## 조율 모델
 
-1. `/plan`
-2. `/coordinate`
-3. 병렬 `agent:spawn`
-4. `/review`
+권장 순서:
 
-## 예시
+1. `/plan`으로 태스크 분해 및 의존성 정리
+2. `/coordinate`로 실행 순서/담당 정의
+3. 도메인별 `agent:spawn` 병렬 실행
+4. `/review`로 QA/보안/성능 게이트 수행
 
-```bash
-oh-my-ag agent:spawn backend "JWT 인증 API 구현" session-app-01 -w ./apps/api
-oh-my-ag agent:spawn frontend "인증 UI 플로우 구현" session-app-01 -w ./apps/web
-oh-my-ag agent:spawn qa "인증 리스크 리뷰" session-app-01
+## 세션 ID와 워크스페이스 전략
+
+기능 스트림마다 session ID를 하나로 고정하세요:
+
+```text
+session-auth-v2
 ```
 
-## 조율 규칙
+도메인별 워크스페이스를 분리해 충돌을 줄입니다:
 
-- 기능 단위로 session ID 고정
-- 도메인별 워크스페이스 분리
-- QA 이슈 반영 후 머지
+- backend: `./apps/api`
+- frontend: `./apps/web`
+- mobile: `./apps/mobile`
+
+## 실행 예시
+
+```bash
+oh-my-ag agent:spawn backend "JWT 인증 API + refresh 플로우 구현" session-auth-v2 -w ./apps/api
+oh-my-ag agent:spawn frontend "로그인 + refresh UX와 에러 상태 구현" session-auth-v2 -w ./apps/web
+oh-my-ag agent:spawn qa "인증 리스크, 테스트 매트릭스, 회귀 범위 검토" session-auth-v2
+```
+
+## 계약 우선 원칙
+
+병렬 코딩 전에 공유 계약을 먼저 고정하세요:
+
+- 요청/응답 스키마
+- 에러 코드/메시지 규칙
+- 인증/세션 수명주기 가정
+
+실행 중 계약이 바뀌면 하위 에이전트를 일시 중단하고, 갱신된 계약으로 프롬프트를 재발행하세요.
+
+## 머지 게이트
+
+다음 조건이 모두 충족되기 전에는 머지하지 않습니다:
+
+1. 도메인별 테스트 통과
+2. 통합 지점이 합의된 계약과 일치
+3. QA의 high/critical 이슈 해결 또는 명시적 예외 승인
+4. 외부 동작이 바뀌면 릴리즈 노트/변경 기록 갱신
+
+## 운영 안티패턴
+
+다음을 피하세요:
+
+- 모든 에이전트가 하나의 워크스페이스 공유
+- 계약 변경을 다른 에이전트에 전파하지 않음
+- 호환성 확인 없이 프론트/백 단독 머지
+
+## 완료 기준
+
+멀티 에이전트 프로젝트는 다음을 만족하면 완료입니다:
+
+- 계획된 태스크가 도메인별로 완료
+- 크로스 도메인 통합 검증 완료
+- QA 승인(또는 리스크 수용 근거)이 기록됨

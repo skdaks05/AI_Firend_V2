@@ -83,7 +83,7 @@ export function Toc({ headings, title }: TocProps) {
   return (
     <aside className="sticky top-24 hidden h-[calc(100vh-7rem)] xl:block">
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/80">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#e6b6b3]/85">
           {title}
         </p>
         <ScrollArea className="h-[calc(100vh-11rem)] pr-3">
@@ -96,7 +96,7 @@ export function Toc({ headings, title }: TocProps) {
                   "block rounded-md px-2 py-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-100",
                   heading.depth === 3 && "pl-5 text-xs",
                   activeHeadingId === heading.id &&
-                    "bg-cyan-500/10 text-cyan-100 ring-1 ring-cyan-300/30",
+                    "bg-[#B23A34]/20 text-zinc-50 ring-1 ring-[#B23A34]/45",
                 )}
               >
                 {heading.text}

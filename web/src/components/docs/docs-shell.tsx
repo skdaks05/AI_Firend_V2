@@ -58,7 +58,7 @@ function SidebarNav({
         <section key={group.id}>
           <Badge
             variant="secondary"
-            className="mb-2 bg-cyan-500/12 text-cyan-100"
+            className="mb-2 border-transparent bg-[#B23A34] text-zinc-50"
           >
             {group.title}
           </Badge>
@@ -92,7 +92,7 @@ function SidebarNav({
 function Brand() {
   return (
     <Link href="/" className="flex items-center gap-3">
-      <span className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-300 via-teal-300 to-emerald-400 text-zinc-900 shadow-[0_0_28px_rgba(45,212,191,0.4)]">
+      <span className="flex size-9 items-center justify-center rounded-lg bg-[#B23A34] text-zinc-50 shadow-[0_0_28px_rgba(178,58,52,0.45)]">
         <BookOpen className="size-5" />
       </span>
       <span className="text-base font-semibold tracking-tight text-zinc-50">
@@ -202,9 +202,9 @@ export function DocsShell({
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="absolute -top-36 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl"
+          className="absolute -top-36 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[#B23A34]/18 blur-3xl"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(45,212,191,0.08),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(16,185,129,0.08),transparent_35%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(178,58,52,0.1),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(143,48,43,0.1),transparent_35%)]" />
       </div>
 
       <Header
@@ -230,7 +230,7 @@ export function DocsShell({
 
         <main className="min-w-0">
           <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-6 lg:p-8">
-            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-cyan-200/70">
+            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#e6b6b3]/85">
               <span>Official Docs</span>
               <Separator orientation="vertical" className="h-3 bg-white/20" />
               <span>{lang.toUpperCase()}</span>

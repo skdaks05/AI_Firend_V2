@@ -5,6 +5,8 @@ import ReactMarkdown from "react-markdown";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 
+import { cn } from "@/lib/utils";
+
 interface DocsArticleProps {
   markdown: string;
 }
@@ -15,12 +17,37 @@ export function DocsArticle({ markdown }: DocsArticleProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="prose prose-invert max-w-none prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/45 prose-code:rounded prose-code:bg-white/8 prose-code:px-1 prose-code:py-0.5 prose-code:before:content-none prose-code:after:content-none prose-table:block prose-table:overflow-x-auto"
+      className="prose prose-invert max-w-none prose-pre:before:content-none prose-pre:after:content-none prose-code:before:content-none prose-code:after:content-none prose-table:block prose-table:overflow-x-auto"
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSlug]}
         components={{
+          pre: ({ children, ...props }) => (
+            <pre
+              className="w-full max-w-full overflow-x-auto rounded-lg border border-white/10 bg-black/45 p-4 text-zinc-100"
+              {...props}
+            >
+              {children}
+            </pre>
+          ),
+          code: ({ className, children, ...props }) => {
+            const isBlock = typeof className === "string";
+
+            return (
+              <code
+                className={cn(
+                  className,
+                  isBlock
+                    ? "whitespace-pre"
+                    : "rounded bg-white/8 px-1 py-0.5 break-words",
+                )}
+                {...props}
+              >
+                {children}
+              </code>
+            );
+          },
           h1: ({ children, ...props }) => (
             <h1
               className="mt-0 mb-5 text-4xl font-semibold tracking-tight text-zinc-50"
@@ -63,7 +90,7 @@ export function DocsArticle({ markdown }: DocsArticleProps) {
           a: ({ href, children, ...props }) => (
             <a
               href={href}
-              className="font-medium text-cyan-300 underline decoration-cyan-300/40 underline-offset-4"
+              className="font-medium text-[#e6b6b3] underline decoration-[#e6b6b3]/45 underline-offset-4"
               target={href?.startsWith("http") ? "_blank" : undefined}
               rel={href?.startsWith("http") ? "noreferrer" : undefined}
               {...props}
@@ -73,7 +100,7 @@ export function DocsArticle({ markdown }: DocsArticleProps) {
           ),
           blockquote: ({ children, ...props }) => (
             <blockquote
-              className="border-l-2 border-cyan-300/40 bg-cyan-500/5 px-4 py-2 text-zinc-200"
+              className="border-l-2 border-[#B23A34]/55 bg-[#B23A34]/10 px-4 py-2 text-zinc-200"
               {...props}
             >
               {children}

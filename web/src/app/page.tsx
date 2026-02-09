@@ -7,12 +7,12 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-zinc-100">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[-15rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="absolute bottom-[-8rem] right-[-6rem] h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+        <div className="absolute left-1/2 top-[-15rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-[#B23A34]/20 blur-3xl" />
+        <div className="absolute bottom-[-8rem] right-[-6rem] h-72 w-72 rounded-full bg-[#7f2824]/20 blur-3xl" />
       </div>
 
       <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-4 py-12 text-center">
-        <div className="mb-5 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 via-teal-300 to-emerald-400 text-zinc-900 shadow-[0_0_34px_rgba(45,212,191,0.45)]">
+        <div className="mb-5 flex size-16 items-center justify-center rounded-2xl bg-[#B23A34] text-zinc-50 shadow-[0_0_34px_rgba(178,58,52,0.5)]">
           <BookOpen className="size-8" />
         </div>
 
@@ -42,7 +42,7 @@ export default function Home() {
           <Button
             asChild
             size="lg"
-            className="bg-cyan-400 text-zinc-900 hover:bg-cyan-300"
+            className="bg-[#B23A34] text-zinc-50 hover:bg-[#9f342e]"
           >
             <a
               href="https://github.com/first-fluke/oh-my-ag"

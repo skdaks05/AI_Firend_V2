@@ -1,3 +1,8 @@
+---
+title: 사용 가이드
+description: 예시, 워크플로우, 대시보드 운영, 문제 해결을 포함한 전체 사용 가이드.
+---
+
 # Antigravity 멀티 에이전트 스킬 사용 가이드
 
 ## 빠른 시작
@@ -106,7 +111,7 @@ bunx oh-my-ag dashboard
 ### 웹 대시보드
 
 ```bash
-npm install          # 최초 1회
+bun install          # 최초 1회
 bunx oh-my-ag dashboard:web
 ```
 
@@ -262,7 +267,7 @@ Antigravity IDE 채팅에서 입력하여 단계별 워크플로우를 실행합
 | CLI를 찾을 수 없음 | `which gemini` / `which claude` 확인, 누락된 CLI 설치 |
 | 에이전트 산출물이 호환되지 않음 | Knowledge Base에서 둘 다 검토, 수정하여 재생성 |
 | 대시보드: "No agents" 표시 | 메모리 파일이 아직 생성되지 않음, orchestrator 실행 필요 |
-| 웹 대시보드가 시작 안 됨 | `npm install`로 chokidar, ws 설치 |
+| 웹 대시보드가 시작 안 됨 | `bun install`로 chokidar, ws 설치 |
 | fswatch not found | macOS: `brew install fswatch`, Linux: `apt install inotify-tools` |
 | QA 리포트에 50개 이상 이슈 | CRITICAL/HIGH부터 처리, 나머지는 문서화 후 나중에 |
 
@@ -287,7 +292,7 @@ bunx oh-my-ag help           # 도움말 표시
 
 ## 개발자용 (통합 가이드)
 
-기존 Antigravity 프로젝트에 이 스킬들을 통합하고 싶다면 [AGENT_GUIDE.md](../AGENT_GUIDE.md)를 참고하세요. 다음을 포함합니다:
+기존 Antigravity 프로젝트에 이 스킬들을 통합하고 싶다면 [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md)를 참고하세요. 다음을 포함합니다:
 - 빠른 3단계 통합
 - 전체 대시보드 통합
 - 본인 기술 스택에 맞게 스킬 커스터마이징
@@ -295,4 +300,4 @@ bunx oh-my-ag help           # 도움말 표시
 
 ---
 
-**Antigravity IDE에서 채팅하세요.** 모니터링을 위해 대시보드를 사용하고, CLI 실행을 위해 orchestrator 스크립트를 사용합니다. 기존 프로젝트에 통합하려면 [AGENT_GUIDE.md](../AGENT_GUIDE.md)를 참고하세요.
+**Antigravity IDE에서 채팅하세요.** 모니터링을 위해 대시보드를 사용하고, CLI 실행을 위해 orchestrator 스크립트를 사용합니다. 기존 프로젝트에 통합하려면 [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md)를 참고하세요.

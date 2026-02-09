@@ -13,9 +13,12 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      version: ${{ steps.release.outputs.version }}
+      cli_release_created: ${{ steps.release.outputs['cli--release_created'] }}
+      cli_tag_name: ${{ steps.release.outputs['cli--tag_name'] }}
+      cli_version: ${{ steps.release.outputs['cli--version'] }}
+      web_release_created: ${{ steps.release.outputs['web--release_created'] }}
+      web_tag_name: ${{ steps.release.outputs['web--tag_name'] }}
+      web_version: ${{ steps.release.outputs['web--version'] }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -23,10 +26,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          include-component-in-tag: true
 
   publish-artifacts:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.cli_release_created == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,15 +46,15 @@ jobs:
 
       - name: Generate prompt-manifest.json
         env:
-          RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
-        run: bunx tsx src/generate-manifest.ts "$RELEASE_VERSION"
+          RELEASE_VERSION: ${{ needs.release-please.outputs.cli_version }}
+        run: bunx tsx cli/generate-manifest.ts "$RELEASE_VERSION"
 
       - name: Commit prompt-manifest.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add prompt-manifest.json
-          git commit -m "chore: update prompt-manifest.json for ${{ needs.release-please.outputs.version }}" || echo "No changes to commit"
+          git commit -m "chore: update prompt-manifest.json for ${{ needs.release-please.outputs.cli_version }}" || echo "No changes to commit"
           git push
 
       - name: Create tarball
@@ -60,7 +64,7 @@ jobs:
 
       - name: Upload release artifacts
         env:
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.cli_tag_name }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
@@ -71,7 +75,7 @@ jobs:
 
   publish-npm:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.cli_release_created == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -94,9 +98,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build CLI
-        run: bun run build
+        run: bun run --cwd cli build
 
       - name: Publish to NPM
-        run: bun publish --access public
+        run: cd cli && bun publish --access public
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -3,8 +3,8 @@
 /**
  * Generate prompt-manifest.json with file list and SHA256 checksums
  *
- * Usage: bunx tsx src/generate-manifest.ts <version>
- * Example: bunx tsx src/generate-manifest.ts 1.2.0
+ * Usage: bunx tsx cli/generate-manifest.ts <version>
+ * Example: bunx tsx cli/generate-manifest.ts 1.2.0
  */
 
 import crypto from "node:crypto";
@@ -93,8 +93,8 @@ function main(): void {
   const version = process.argv[2];
 
   if (!version) {
-    console.error("Usage: bunx tsx src/generate-manifest.ts <version>");
-    console.error("Example: bunx tsx src/generate-manifest.ts 1.2.0");
+    console.error("Usage: bunx tsx cli/generate-manifest.ts <version>");
+    console.error("Example: bunx tsx cli/generate-manifest.ts 1.2.0");
     process.exit(1);
   }
 

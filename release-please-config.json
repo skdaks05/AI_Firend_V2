@@ -1,7 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "tag-separator": "-",
+  "separate-pull-requests": true,
   "packages": {
-    ".": {
+    "cli": {
+      "component": "cli",
+      "package-name": "oh-my-ag",
       "release-type": "node",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
@@ -13,6 +19,14 @@
           "jsonpath": "$.version"
         }
       ]
+    },
+    "web": {
+      "component": "web",
+      "package-name": "oh-my-ag-web",
+      "release-type": "node",
+      "changelog-path": "web/CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true
     }
   },
   "changelog-sections": [

@@ -204,7 +204,7 @@ This creates `.agent/config/user-preferences.yaml` for your project.
 
 ### 3. Monitor with Dashboards
 
-For dashboard setup and usage details, see [`docs/USAGE.md`](./docs/USAGE.md#real-time-dashboards).
+For dashboard setup and usage details, see [`web/content/en/guide/usage.md`](./web/content/en/guide/usage.md#real-time-dashboards).
 
 ## How It Works
 
@@ -300,7 +300,7 @@ Dashboards are optional monitoring tools for orchestrator sessions:
 - Terminal: `bunx oh-my-ag dashboard`
 - Web: `bunx oh-my-ag dashboard:web` (`http://localhost:9847`)
 
-For requirements, screenshots, and detailed behavior, see [`docs/USAGE.md`](./docs/USAGE.md#real-time-dashboards).
+For requirements, screenshots, and detailed behavior, see [`web/content/en/guide/usage.md`](./web/content/en/guide/usage.md#real-time-dashboards).
 
 ## Skill Architecture
 
@@ -491,10 +491,10 @@ MIT
 |----------|----------|---------|
 | [README.md](./README.md) | Users | Project overview (English) |
 | [README.ko.md](./README.ko.md) | Users | Project overview (Korean) |
-| [USAGE.md](./docs/USAGE.md) | Users | How to use the skills (English) |
-| [USAGE.ko.md](./docs/USAGE.ko.md) | Users | How to use the skills (Korean) |
-| [project-structure.md](./docs/project-structure.md) | Users | Full project directory structure (English) |
-| [project-structure.ko.md](./docs/project-structure.ko.md) | Users | Full project directory structure (Korean) |
+| [usage.md](./web/content/en/guide/usage.md) | Users | How to use the skills (English) |
+| [usage.ko.md](./web/content/ko/guide/usage.md) | Users | How to use the skills (Korean) |
+| [project-structure.md](./web/content/en/core-concepts/project-structure.md) | Users | Full project directory structure (English) |
+| [project-structure.ko.md](./web/content/ko/core-concepts/project-structure.md) | Users | Full project directory structure (Korean) |
 | [AGENT_GUIDE.md](./AGENT_GUIDE.md) | Developers | **How to integrate into your existing project** |
 
 ---

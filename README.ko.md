@@ -160,14 +160,12 @@ cp -r oh-my-ag/.agent/workflows /path/to/your-project/.agent/
 
 # 3. 설정 복사 (선택)
 cp -r oh-my-ag/.agent/config /path/to/your-project/.agent/
-cp oh-my-ag/package.json /path/to/your-project/  # 의존성 병합
 ```
 
 본인 프로젝트에서:
 
 ```bash
 cd /path/to/your-project
-npm install  # 대시보드 사용할 경우
 antigravity open .
 ```
 
@@ -214,7 +212,7 @@ antigravity open .
 
 ### 3. 대시보드로 모니터링
 
-대시보드 설정과 상세 사용법은 [`docs/USAGE.ko.md`](./docs/USAGE.ko.md#실시간-대시보드)를 참고하세요.
+대시보드 설정과 상세 사용법은 [`web/content/ko/guide/usage.md`](./web/content/ko/guide/usage.md#실시간-대시보드)를 참고하세요.
 
 ## 동작 원리
 
@@ -310,7 +308,7 @@ Orchestrator가 `.serena/memories/`에 구조화된 상태를 기록합니다:
 - 터미널: `bunx oh-my-ag dashboard`
 - 웹: `bunx oh-my-ag dashboard:web` (`http://localhost:9847`)
 
-요구사항, 화면, 상세 동작은 [`docs/USAGE.ko.md`](./docs/USAGE.ko.md#실시간-대시보드)를 참고하세요.
+요구사항, 화면, 상세 동작은 [`web/content/ko/guide/usage.md`](./web/content/ko/guide/usage.md#실시간-대시보드)를 참고하세요.
 
 ## 스킬 아키텍처
 
@@ -501,10 +499,10 @@ MIT
 |------|------|------|
 | [README.md](./README.md) | 사용자 | 프로젝트 개요 (영문) |
 | [README.ko.md](./README.ko.md) | 사용자 | 프로젝트 개요 (한글) |
-| [USAGE.md](./docs/USAGE.md) | 사용자 | 스킬 사용 방법 (영문) |
-| [USAGE.ko.md](./docs/USAGE.ko.md) | 사용자 | 스킬 사용 방법 (한글) |
-| [project-structure.md](./docs/project-structure.md) | 사용자 | 전체 프로젝트 디렉토리 구조 (영문) |
-| [project-structure.ko.md](./docs/project-structure.ko.md) | 사용자 | 전체 프로젝트 디렉토리 구조 (한글) |
+| [usage.md](./web/content/en/guide/usage.md) | 사용자 | 스킬 사용 방법 (영문) |
+| [usage.ko.md](./web/content/ko/guide/usage.md) | 사용자 | 스킬 사용 방법 (한글) |
+| [project-structure.md](./web/content/en/core-concepts/project-structure.md) | 사용자 | 전체 프로젝트 디렉토리 구조 (영문) |
+| [project-structure.ko.md](./web/content/ko/core-concepts/project-structure.md) | 사용자 | 전체 프로젝트 디렉토리 구조 (한글) |
 | [AGENT_GUIDE.md](./AGENT_GUIDE.md) | 개발자 | **기존 프로젝트에 통합하는 방법** |
 
 ---

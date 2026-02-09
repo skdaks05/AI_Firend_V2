@@ -1,3 +1,8 @@
+---
+title: Usage Guide
+description: Full usage guide including examples, workflows, dashboard operations, and troubleshooting.
+---
+
 # How to Use Antigravity Multi-Agent Skills
 
 ## Quick Start
@@ -106,7 +111,7 @@ Watches `.serena/memories/` using `fswatch` (macOS) or `inotifywait` (Linux). Di
 ### Web Dashboard
 
 ```bash
-npm install          # first time only
+bun install          # first time only
 bunx oh-my-ag dashboard:web
 ```
 
@@ -263,7 +268,7 @@ Browser:    http://localhost:9847 → real-time status
 | CLI not found | Check `which gemini` / `which claude`, install missing CLIs |
 | Incompatible agent outputs | Review both in Knowledge Base, re-spawn with corrections |
 | Dashboard: "No agents" | Memory files not created yet, run orchestrator first |
-| Web dashboard won't start | Run `npm install` to install chokidar and ws |
+| Web dashboard won't start | Run `bun install` to install chokidar and ws |
 | fswatch not found | macOS: `brew install fswatch`, Linux: `apt install inotify-tools` |
 | QA report has 50+ issues | Focus on CRITICAL/HIGH first, document rest for later |
 
@@ -288,7 +293,7 @@ bunx oh-my-ag help           # Show help
 
 ## For Developers (Integration Guide)
 
-If you want to integrate these skills into your existing Antigravity project, see [AGENT_GUIDE.md](../AGENT_GUIDE.md) for:
+If you want to integrate these skills into your existing Antigravity project, see [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md) for:
 - Quick 3-step integration
 - Full dashboard integration
 - Customizing skills for your tech stack
@@ -296,4 +301,4 @@ If you want to integrate these skills into your existing Antigravity project, se
 
 ---
 
-**Just chat in Antigravity IDE.** For monitoring, use the dashboards. For CLI execution, use the orchestrator scripts. To integrate into your existing project, see [AGENT_GUIDE.md](../AGENT_GUIDE.md).
+**Just chat in Antigravity IDE.** For monitoring, use the dashboards. For CLI execution, use the orchestrator scripts. To integrate into your existing project, see [AGENT_GUIDE.md](https://github.com/first-fluke/oh-my-ag/blob/main/AGENT_GUIDE.md).

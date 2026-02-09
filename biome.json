@@ -8,9 +8,14 @@
   "files": {
     "ignoreUnknown": false,
     "includes": [
-      "src/**",
+      "cli/**",
       "bin/**",
       "scripts/**",
+      "web/src/**",
+      "web/content/**",
+      "web/*.ts",
+      "web/*.tsx",
+      "web/package.json",
       "package.json",
       "tsconfig.json",
       "biome.json"
@@ -30,6 +35,11 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "double"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {

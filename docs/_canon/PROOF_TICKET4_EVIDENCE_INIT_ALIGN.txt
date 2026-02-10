@@ -1,0 +1,51 @@
+TICKET-4 EVIDENCE INIT ALIGNMENT - Definition of Done Proof
+=============================================================
+
+Baseline: HEAD=3796b92 (fix(verify): enforce GOALS evidence schema keys)
+Worktree: clean (stash untouched)
+
+---
+
+Problem: evidence_init.ts generated 6-key skeleton (missing inputs/decisions/tests)
+         verify.ts requires 9 keys → evidence:init output always FAIL on verify
+
+Fix: Added inputs (source_refs/file_hashes/config_versions), decisions, tests
+     to evidence_pack.yaml skeleton in evidence_init.ts
+
+---
+
+DoD-A: evidence:init generates valid skeleton
+-----------------------------------------------
+Command: npx tsx cli/cli.ts evidence:init test-rt T-001 --force
+Result:  INIT_EXIT=0
+Generated evidence_pack.yaml keys:
+  run_id, task_id, timestamp_kst, artifacts, inputs, assumptions,
+  decisions, tests, approvals (9/9)
+inputs sub-keys: source_refs, file_hashes, config_versions (3/3)
+
+Verdict: PASS
+
+---
+
+DoD-B: evidence:init → verify round-trip PASS
+-----------------------------------------------
+Command: npx tsx cli/cli.ts verify backend --workspace /tmp/dod-ticket4-rt
+Result:
+  Evidence Path      | PASS | .serena/evidence/test-rt/T-001/
+  Evidence Files     | PASS | 3/3 present
+  Evidence Schema    | PASS | All required keys present
+  Evidence Approvals | PASS | Approval chain valid
+  VERIFY_EXIT=0
+
+Verdict: PASS
+
+---
+
+Staged files:
+  1. cli/commands/evidence_init.ts
+
+Non-touch maintained:
+  - docs/GOALS.md: NOT modified
+  - docs/AGENT_GUIDE.md: NOT modified
+  - cli/commands/doctor.ts: NOT modified
+  - mcp_config.json: NOT modified

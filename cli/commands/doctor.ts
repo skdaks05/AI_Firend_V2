@@ -5,6 +5,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { getAllSkills, installShared, installSkill } from "../lib/skills.js";
 import type { CLICheck, SkillCheck } from "../types/index.js";
+import { runVerify } from "./verify.js";
 
 async function checkCLI(
   name: string,
@@ -100,7 +101,62 @@ async function checkGlobalWorkflows(): Promise<{
   }
 }
 
-export async function doctor(jsonMode = false): Promise<void> {
+type DoctorOptions = {
+  json?: boolean;
+  verifyGate?: boolean;
+  agent?: string;
+  workspace?: string;
+};
+
+export async function doctor(jsonMode = false, options: DoctorOptions = {}): Promise<void> {
+  // --- verify-gate mode: delegates to runVerify, skips standard checks ---
+  if (options.verifyGate) {
+    if (!options.agent) {
+      const error = "--agent <type> is required with --verify-gate";
+      if (jsonMode) {
+        console.log(JSON.stringify({ ok: false, error }));
+      } else {
+        p.log.error(error);
+      }
+      process.exit(2);
+    }
+
+    const workspace = options.workspace || process.cwd();
+    const outcome = runVerify(options.agent, workspace);
+
+    if ("error" in outcome) {
+      if (jsonMode) {
+        console.log(JSON.stringify({ ok: false, mode: "verify-gate", error: outcome.error }));
+      } else {
+        p.log.error(outcome.error);
+      }
+      process.exit(outcome.exitCode);
+    }
+
+    const { result } = outcome;
+
+    if (jsonMode) {
+      console.log(JSON.stringify({
+        ok: result.ok,
+        mode: "verify-gate",
+        agent: result.agent,
+        workspace: result.workspace,
+        verify: result,
+      }, null, 2));
+    } else {
+      const { passed, failed, warned } = result.summary;
+      const summaryText = `${passed} passed, ${failed} failed, ${warned} warnings`;
+      if (result.ok) {
+        p.log.success(`doctor verify-gate PASS: ${summaryText}`);
+      } else {
+        p.log.error(`doctor verify-gate FAIL: ${summaryText}`);
+      }
+    }
+
+    process.exit(outcome.exitCode);
+  }
+
+  // --- standard doctor mode ---
   const cwd = process.cwd();
 
   const clis = await Promise.all([

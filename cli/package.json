@@ -44,7 +44,7 @@
     "dev": "bun run cli.ts",
     "lint": "biome check --write --unsafe .",
     "test": "vitest run",
-    "test:hitl": "vitest run __tests__/verify.approvals.test.ts __tests__/cleanup.guard.test.ts",
+    "test:hitl": "vitest run __tests__/verify.approvals.test.ts __tests__/cleanup.guard.test.ts __tests__/doctor.verify-gate.test.ts",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

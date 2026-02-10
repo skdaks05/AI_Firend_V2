@@ -670,33 +670,24 @@ function runAgentChecks(
   return checks;
 }
 
-export async function verify(
+/**
+ * Pure verify logic — returns VerifyResult without process.exit.
+ * Reusable by doctor --verify-gate.
+ */
+export function runVerify(
   agentType: string,
   workspace: string,
-  jsonMode = false,
-): Promise<void> {
+): { result: VerifyResult; exitCode: number } | { error: string; exitCode: number } {
   const normalizedAgent = agentType.toLowerCase() as AgentType;
 
   if (!VALID_AGENTS.includes(normalizedAgent)) {
-    const error = `Invalid agent type: ${agentType}. Valid types: ${VALID_AGENTS.join(", ")}`;
-    if (jsonMode) {
-      console.log(JSON.stringify({ ok: false, error }));
-    } else {
-      p.log.error(error);
-    }
-    process.exit(2);
+    return { error: `Invalid agent type: ${agentType}. Valid types: ${VALID_AGENTS.join(", ")}`, exitCode: 2 };
   }
 
   const resolvedWorkspace = workspace || process.cwd();
 
   if (!existsSync(resolvedWorkspace)) {
-    const error = `Workspace not found: ${resolvedWorkspace}`;
-    if (jsonMode) {
-      console.log(JSON.stringify({ ok: false, error }));
-    } else {
-      p.log.error(error);
-    }
-    process.exit(2);
+    return { error: `Workspace not found: ${resolvedWorkspace}`, exitCode: 2 };
   }
 
   const checks: VerifyCheck[] = [];
@@ -721,21 +712,42 @@ export async function verify(
     summary: { passed, failed, warned },
   };
 
+  return { result, exitCode: failed > 0 ? 1 : 0 };
+}
+
+export async function verify(
+  agentType: string,
+  workspace: string,
+  jsonMode = false,
+): Promise<void> {
+  const outcome = runVerify(agentType, workspace);
+
+  if ("error" in outcome) {
+    if (jsonMode) {
+      console.log(JSON.stringify({ ok: false, error: outcome.error }));
+    } else {
+      p.log.error(outcome.error);
+    }
+    process.exit(outcome.exitCode);
+  }
+
+  const { result } = outcome;
+
   if (jsonMode) {
     console.log(JSON.stringify(result, null, 2));
-    process.exit(failed > 0 ? 1 : 0);
+    process.exit(outcome.exitCode);
   }
 
   console.clear();
-  p.intro(pc.bgCyan(pc.white(` 🔍 Verify: ${normalizedAgent} agent `)));
+  p.intro(pc.bgCyan(pc.white(` 🔍 Verify: ${result.agent} agent `)));
 
-  p.note(pc.dim(resolvedWorkspace), "Workspace");
+  p.note(pc.dim(result.workspace), "Workspace");
 
   const table = [
     "┌────────────────────────────┬────────┬─────────────────────────────┐",
     `│ ${pc.bold("Check")}                        │ ${pc.bold("Status")} │ ${pc.bold("Details")}                     │`,
     "├────────────────────────────┼────────┼─────────────────────────────┤",
-    ...checks.map((check) => {
+    ...result.checks.map((check) => {
       let statusIcon: string;
       switch (check.status) {
         case "pass":
@@ -761,6 +773,7 @@ export async function verify(
   console.log(table);
   console.log();
 
+  const { passed, failed, warned } = result.summary;
   const summaryText = `${pc.green(`${passed} passed`)}, ${pc.red(`${failed} failed`)}, ${pc.yellow(`${warned} warnings`)}`;
 
   if (failed > 0) {

@@ -61,8 +61,16 @@ program
   .command("doctor")
   .description("Check CLI installations, MCP configs, and skill status")
   .option("--json", "Output as JSON for CI/CD")
+  .option("--verify-gate", "Run verify gate only (skip standard checks)")
+  .option("--agent <type>", "Agent type for verify-gate (backend/frontend/mobile/qa/debug/pm)")
+  .option("-w, --workspace <path>", "Workspace path for verify-gate", process.cwd())
   .action((options) => {
-    doctor(options.json).catch(console.error);
+    doctor(options.json, {
+      json: options.json,
+      verifyGate: options.verifyGate,
+      agent: options.agent,
+      workspace: options.workspace,
+    }).catch(console.error);
   });
 
 program

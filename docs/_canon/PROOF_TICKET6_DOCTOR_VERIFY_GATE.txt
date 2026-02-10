@@ -1,0 +1,97 @@
+TICKET-6 DOCTOR VERIFY-GATE — Definition of Done Proof
+========================================================
+
+Baseline: HEAD=b4e8d61
+Worktree: clean
+
+---
+
+DoD-1: doctor verify-gate (PENDING) => exit 1
+-----------------------------------------------
+Command: npx tsx cli/cli.ts doctor --verify-gate --agent backend --workspace /tmp/dod-ticket6 --json
+Output:
+  ok: false
+  mode: "verify-gate"
+  Approvals JSON | fail | status=PENDING — approval required
+EXIT=1
+
+Verdict: PASS
+
+---
+
+DoD-2: doctor verify-gate (APPROVED valid) => exit 0
+------------------------------------------------------
+Command: npx tsx cli/cli.ts doctor --verify-gate --agent backend --workspace /tmp/dod-ticket6 --json
+Output:
+  ok: true
+  mode: "verify-gate"
+  Approvals JSON | pass | APPROVED — gate open
+  8 passed, 0 failed, 1 warned
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-3: doctor default mode regression
+---------------------------------------
+Command: npx tsx cli/cli.ts doctor --json
+Output: standard schema (clis, skills, serena, gitRerere fields present, no "mode" key)
+EXIT=0 or 1 (environment-dependent)
+
+Verdict: PASS (no regression)
+
+---
+
+DoD-4: --verify-gate without --agent => exit 2
+------------------------------------------------
+Command: npx tsx cli/cli.ts doctor --verify-gate --json
+Output: {"ok":false,"error":"--agent <type> is required with --verify-gate"}
+EXIT=2
+
+Verdict: PASS
+
+---
+
+DoD-5: test:hitl full PASS
+----------------------------
+Command: npm run --workspace cli test:hitl
+Output:
+  verify.approvals.test.ts   (11 tests)  41ms
+  cleanup.guard.test.ts      (3 tests)   10079ms
+  doctor.verify-gate.test.ts (4 tests)   21244ms
+  Test Files: 3 passed (3)
+  Tests:     18 passed (18)
+  Duration:  21.69s
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-6: CI workflow targets HITL tests only
+--------------------------------------------
+File: .github/workflows/hitl_guard.yml
+Command: npm run --workspace cli test:hitl
+Targets: verify.approvals + cleanup.guard + doctor.verify-gate (no legacy tests)
+
+Verdict: PASS (unchanged trigger, updated test:hitl script includes new test file)
+
+---
+
+DoD-7: Scope / Non-touch
+--------------------------
+Modified files:
+  1. cli/cli.ts (doctor options: --verify-gate, --agent, --workspace)
+  2. cli/commands/doctor.ts (verify-gate mode + import runVerify)
+  3. cli/commands/verify.ts (extracted runVerify() pure function)
+  4. cli/package.json (test:hitl updated)
+
+New files:
+  5. cli/__tests__/doctor.verify-gate.test.ts (4 test cases)
+  6. docs/_canon/PROOF_TICKET6_DOCTOR_VERIFY_GATE.txt (this file)
+
+Non-touch verified:
+  - docs/GOALS.md: NOT modified (0)
+  - AGENT_GUIDE.md: NOT modified (0)
+  - mcp_config.json: NOT modified (0)

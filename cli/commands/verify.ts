@@ -415,7 +415,10 @@ function checkEvidencePack(
     "task_id",
     "timestamp_kst",
     "artifacts",
+    "inputs",
     "assumptions",
+    "decisions",
+    "tests",
     "approvals",
   ];
   const missingKeys = requiredKeys.filter((k) => !(k in pack));
@@ -439,6 +442,43 @@ function checkEvidencePack(
   ) {
     checks.push(
       createCheck("Evidence Schema", "fail", "artifacts.paths is required"),
+    );
+    return checks;
+  }
+
+  // inputs must be object with source_refs, file_hashes, config_versions
+  const inputs = pack.inputs as Record<string, unknown> | undefined;
+  if (!inputs || typeof inputs !== "object") {
+    checks.push(
+      createCheck("Evidence Schema", "fail", "inputs must be an object"),
+    );
+    return checks;
+  }
+  const inputsRequired = ["source_refs", "file_hashes", "config_versions"];
+  const missingInputs = inputsRequired.filter((k) => !(k in inputs));
+  if (missingInputs.length > 0) {
+    checks.push(
+      createCheck(
+        "Evidence Schema",
+        "fail",
+        `inputs missing: ${missingInputs.join(", ")}`,
+      ),
+    );
+    return checks;
+  }
+
+  // decisions must be an array
+  if (!Array.isArray(pack.decisions)) {
+    checks.push(
+      createCheck("Evidence Schema", "fail", "decisions must be an array"),
+    );
+    return checks;
+  }
+
+  // tests must be an array
+  if (!Array.isArray(pack.tests)) {
+    checks.push(
+      createCheck("Evidence Schema", "fail", "tests must be an array"),
     );
     return checks;
   }

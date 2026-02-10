@@ -1,0 +1,48 @@
+TICKET-4 ALIGNMENT HOTFIX - Definition of Done Proof
+=====================================================
+
+Baseline: HEAD=23c30b3 (feat(verify): add Evidence Pack gate)
+Stash: pre-ticket4-alignment (7 dirty + 2 untracked files stashed)
+
+---
+
+DoD-1: FAIL case (old schema — missing inputs/decisions/tests)
+--------------------------------------------------------------
+evidence_pack.yaml keys: run_id, task_id, timestamp_kst, artifacts, assumptions, approvals
+Expected: FAIL (exit 1)
+
+Result:
+  Evidence Schema  | FAIL | Missing keys: inputs, decisions, tests
+  EXIT_CODE=1
+
+Verdict: PASS (correctly rejects old schema)
+
+---
+
+DoD-2: PASS case (complete schema — all 9 keys)
+------------------------------------------------
+evidence_pack.yaml keys: run_id, task_id, timestamp_kst, artifacts, inputs, assumptions, decisions, tests, approvals
+inputs sub-keys: source_refs, file_hashes, config_versions
+Expected: PASS (exit 0)
+
+Result:
+  Evidence Path      | PASS | .serena/evidence/test-run/T-001/
+  Evidence Files     | PASS | 3/3 present
+  Evidence Schema    | PASS | All required keys present
+  Evidence Approvals | PASS | Approval chain valid
+  EXIT_CODE=0
+
+Verdict: PASS (correctly accepts complete schema)
+
+---
+
+Staged files (scope-locked):
+  1. cli/commands/verify.ts
+  2. docs/EVIDENCE_PACK.md
+  3. docs/_canon/PROOF_TICKET4_ALIGNMENT.txt
+
+Non-touch maintained:
+  - docs/GOALS.md: NOT modified
+  - docs/AGENT_GUIDE.md: NOT modified
+  - cli/commands/doctor.ts: NOT modified
+  - mcp_config.json: NOT modified

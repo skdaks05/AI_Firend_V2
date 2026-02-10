@@ -36,6 +36,14 @@ artifacts:
     - "src/auth.test.ts"
   diff_summary: "Added JWT auth module"
 
+inputs:
+  source_refs:
+    - "GOALS.md v2.1 §4"
+  file_hashes:
+    - "src/auth.ts: abc123"
+  config_versions:
+    - "tsconfig: 5.0"
+
 assumptions:
   - "Node.js 20+ runtime available"
   # 빈 배열도 허용하지만, 키 자체가 없으면 FAIL (GOALS 계약5)
@@ -57,7 +65,10 @@ approvals:
 - `task_id`
 - `timestamp_kst`
 - `artifacts` (내부에 `paths` 필수)
+- `inputs` (객체, 내부에 `source_refs`, `file_hashes`, `config_versions` 필수)
 - `assumptions` (빈 배열 허용, 키 누락 불가)
+- `decisions` (배열, 빈 배열 허용, 키 누락 불가)
+- `tests` (배열, 빈 배열 허용, 키 누락 불가)
 - `approvals`
   - `hitl_required` (bool, 필수)
   - `hitl_decision_ref` (`hitl_required=true`일 때 필수, 없으면 FAIL)
@@ -100,7 +111,17 @@ oh-my-ag verify <agent-type> --workspace <path>
 
 1. `result-{agent}.md`에서 `EVIDENCE_PATH:` 추출
 2. 경로 형식 검증 (`.serena/evidence/<run_id>/<task_id>/`)
-3. 3파일 존재 확인
-4. `evidence_pack.yaml` 파싱 + 최소 키 검증
-5. `approvals.hitl_required=true` → `hitl_decision_ref` 존재 확인
-6. 위 중 하나라도 실패 → **FAIL (exit 1)**
+3. 3파일 존재 확인 (`evidence_pack.yaml`, `verification_report.md`, `execution_log.txt`)
+4. `evidence_pack.yaml` 파싱 + 필수 키 9개 검증
+5. `artifacts.paths` 배열 존재 확인
+6. `inputs` 객체 구조 검증 (`source_refs`, `file_hashes`, `config_versions`)
+7. `decisions` 배열 타입 확인
+8. `tests` 배열 타입 확인
+9. `approvals.hitl_required=true` → `hitl_decision_ref` 존재 확인
+10. 위 중 하나라도 실패 → **FAIL (exit 1)**
+
+### approvals.json 방침
+
+- `evidence:init`이 `approvals.json`을 함께 생성하지만, **verify에서 approvals.json 존재 여부는 검증하지 않는다**.
+- `evidence_pack.yaml` 내부의 `approvals` 키만 검증 대상이다.
+- HITL 의미론적 검증(상태 머신)은 TICKET-4 HITL 단계에서 별도 구현 예정이다.

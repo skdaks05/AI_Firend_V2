@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import YAML from "yaml";
 import type { VerifyCheck, VerifyResult } from "../types/index.js";
 
 type AgentType = "backend" | "frontend" | "mobile" | "qa" | "debug" | "pm";
@@ -301,6 +302,193 @@ function checkPmPlan(workspace: string): VerifyCheck {
   }
 }
 
+const EVIDENCE_PATH_PATTERN = /^\.serena\/evidence\/[^/]+\/[^/]+\/?$/;
+
+function checkEvidencePack(
+  workspace: string,
+  agentType: AgentType,
+): VerifyCheck[] {
+  const checks: VerifyCheck[] = [];
+
+  const resultFile = join(
+    workspace,
+    ".serena",
+    "memories",
+    `result-${agentType}.md`,
+  );
+
+  if (!existsSync(resultFile)) {
+    checks.push(
+      createCheck(
+        "Evidence Path",
+        "fail",
+        `result-${agentType}.md not found`,
+      ),
+    );
+    return checks;
+  }
+
+  const resultContent = readFileSync(resultFile, "utf-8");
+  const pathMatch = resultContent.match(/^EVIDENCE_PATH:\s*(.+)$/m);
+
+  if (!pathMatch?.[1]) {
+    checks.push(
+      createCheck(
+        "Evidence Path",
+        "fail",
+        `EVIDENCE_PATH: not found in result-${agentType}.md`,
+      ),
+    );
+    return checks;
+  }
+
+  const evidencePath = pathMatch[1].trim();
+
+  if (!EVIDENCE_PATH_PATTERN.test(evidencePath)) {
+    checks.push(
+      createCheck(
+        "Evidence Path",
+        "fail",
+        "Invalid format. Expected: .serena/evidence/<run_id>/<task_id>/",
+      ),
+    );
+    return checks;
+  }
+
+  checks.push(createCheck("Evidence Path", "pass", evidencePath));
+
+  const evidenceDir = join(workspace, evidencePath);
+  const requiredFiles = ["evidence_pack.yaml", "verification_report.md"];
+  const hasLogTxt = existsSync(join(evidenceDir, "execution_log.txt"));
+  const hasLogJson = existsSync(join(evidenceDir, "execution_log.json"));
+
+  for (const file of requiredFiles) {
+    if (!existsSync(join(evidenceDir, file))) {
+      checks.push(
+        createCheck("Evidence Files", "fail", `Missing: ${file}`),
+      );
+      return checks;
+    }
+  }
+
+  if (!hasLogTxt && !hasLogJson) {
+    checks.push(
+      createCheck(
+        "Evidence Files",
+        "fail",
+        "Missing: execution_log.txt (or .json)",
+      ),
+    );
+    return checks;
+  }
+
+  checks.push(createCheck("Evidence Files", "pass", "3/3 present"));
+
+  const yamlPath = join(evidenceDir, "evidence_pack.yaml");
+  let pack: Record<string, unknown>;
+  try {
+    pack = YAML.parse(readFileSync(yamlPath, "utf-8"));
+  } catch {
+    checks.push(
+      createCheck(
+        "Evidence Schema",
+        "fail",
+        "evidence_pack.yaml is not valid YAML",
+      ),
+    );
+    return checks;
+  }
+
+  if (!pack || typeof pack !== "object") {
+    checks.push(
+      createCheck(
+        "Evidence Schema",
+        "fail",
+        "evidence_pack.yaml is empty or not a mapping",
+      ),
+    );
+    return checks;
+  }
+
+  const requiredKeys = [
+    "run_id",
+    "task_id",
+    "timestamp_kst",
+    "artifacts",
+    "assumptions",
+    "approvals",
+  ];
+  const missingKeys = requiredKeys.filter((k) => !(k in pack));
+
+  if (missingKeys.length > 0) {
+    checks.push(
+      createCheck(
+        "Evidence Schema",
+        "fail",
+        `Missing keys: ${missingKeys.join(", ")}`,
+      ),
+    );
+    return checks;
+  }
+
+  const artifacts = pack.artifacts as Record<string, unknown> | undefined;
+  if (
+    !artifacts ||
+    typeof artifacts !== "object" ||
+    !("paths" in artifacts)
+  ) {
+    checks.push(
+      createCheck("Evidence Schema", "fail", "artifacts.paths is required"),
+    );
+    return checks;
+  }
+
+  checks.push(
+    createCheck("Evidence Schema", "pass", "All required keys present"),
+  );
+
+  const approvals = pack.approvals as Record<string, unknown> | undefined;
+
+  if (!approvals || typeof approvals !== "object") {
+    checks.push(
+      createCheck(
+        "Evidence Approvals",
+        "fail",
+        "approvals must be a mapping with hitl_required",
+      ),
+    );
+    return checks;
+  }
+
+  if (!("hitl_required" in approvals)) {
+    checks.push(
+      createCheck(
+        "Evidence Approvals",
+        "fail",
+        "approvals.hitl_required is required",
+      ),
+    );
+    return checks;
+  }
+
+  if (approvals.hitl_required === true && !approvals.hitl_decision_ref) {
+    checks.push(
+      createCheck(
+        "Evidence Approvals",
+        "fail",
+        "hitl_required=true but hitl_decision_ref missing",
+      ),
+    );
+    return checks;
+  }
+
+  checks.push(
+    createCheck("Evidence Approvals", "pass", "Approval chain valid"),
+  );
+
+  return checks;
+}
+
 function runAgentChecks(
   agentType: AgentType,
   workspace: string,
@@ -387,6 +575,9 @@ export async function verify(
   checks.push(checkHardcodedSecrets(resolvedWorkspace));
   checks.push(checkTodoComments(resolvedWorkspace));
   checks.push(...runAgentChecks(normalizedAgent, resolvedWorkspace));
+  checks.push(
+    ...checkEvidencePack(resolvedWorkspace, normalizedAgent),
+  );
 
   const passed = checks.filter((c) => c.status === "pass").length;
   const failed = checks.filter((c) => c.status === "fail").length;

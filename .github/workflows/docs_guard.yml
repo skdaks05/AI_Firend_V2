@@ -1,0 +1,19 @@
+﻿name: docs-guard
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  docs_guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure required docs exist
+        run: |
+          test -f docs/GOALS.md
+          test -f docs/DOCS_SAFETY.md
+          # 있으면 강제, 없으면 주석 제거
+          # test -f docs/EVIDENCE_PACK.md
+          echo "docs-guard OK"

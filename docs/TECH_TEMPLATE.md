@@ -4,8 +4,6 @@
 
 ## 1. Goal Summary
 
-<!-- One-paragraph summary derived from the SPEC -->
-
 ${GOAL_SUMMARY}
 
 ## 2. Scope

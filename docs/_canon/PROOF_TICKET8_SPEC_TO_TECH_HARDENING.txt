@@ -1,0 +1,98 @@
+TICKET-8 SPEC-TO-TECH HARDENING — Definition of Done Proof
+============================================================
+
+Baseline: HEAD=5f38589
+Worktree: clean
+
+---
+
+DoD-1: SPEC + template -> PASS (exit 0)
+-----------------------------------------
+Command: npx tsx cli/cli.ts spec:to-tech SPEC.md --run-id stt-run --task-id T-STT -w <tmp>
+Output:
+  docs/TECH.md created with all 6 sections
+  No unreplaced ${...} tokens
+  evidence_pack.yaml has file_hashes (SPEC sha256 + TECH_TEMPLATE.md sha256)
+  decisions contains "spec_to_tech_v1"
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-2: Template missing -> FAIL (exit 2)
+------------------------------------------
+Test: Temporarily rename docs/TECH_TEMPLATE.md
+Command: npx tsx cli/cli.ts spec:to-tech SPEC.md --run-id stt-miss --task-id T-MISS -w <tmp>
+Output: TECH_TEMPLATE.md not found
+EXIT=2
+
+Verdict: PASS
+
+---
+
+DoD-3: Unreplaced tokens -> FAIL (exit 1)
+-------------------------------------------
+Test: Append ${EXTRA_UNKNOWN_TOKEN} to template
+Command: npx tsx cli/cli.ts spec:to-tech SPEC.md --run-id stt-bad --task-id T-BAD -w <tmp>
+Output: Unreplaced tokens: ${EXTRA_UNKNOWN_TOKEN}
+EXIT=1
+
+Verdict: PASS
+
+---
+
+DoD-4: --dry-run -> no files + exit 0
+----------------------------------------
+Command: npx tsx cli/cli.ts spec:to-tech SPEC.md --run-id stt-dry --task-id T-DRY -w <tmp> --dry-run
+Output: Reports paths + hashes + validation status
+Verified: docs/TECH.md NOT created, .serena/ NOT created, result-pm.md NOT created
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-5: test:hitl full PASS
+----------------------------
+Command: npm run --workspace cli test:hitl
+Output:
+  verify.approvals.test.ts     (11 tests)  62ms
+  cleanup.guard.test.ts        (3 tests)   11594ms
+  spec-to-tech.test.ts         (7 tests)   18600ms
+  doctor.verify-gate.test.ts   (4 tests)   23798ms
+  Test Files: 4 passed (4)
+  Tests:     25 passed (25)
+  Duration:  24.25s
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-6: Scope / Non-touch
+--------------------------
+Modified files:
+  1. cli/commands/spec_to_tech.ts (SSOT template, quality gate, file hashes, dry-run)
+  2. cli/cli.ts (--dry-run option added)
+  3. cli/__tests__/spec-to-tech.test.ts (7 tests, up from 4)
+  4. docs/TECH_TEMPLATE.md (removed comment line for clean token replacement)
+
+New files:
+  5. docs/_canon/PROOF_TICKET8_SPEC_TO_TECH_HARDENING.txt (this file)
+
+Non-touch verified:
+  - docs/GOALS.md: NOT modified (0)
+  - AGENT_GUIDE.md: NOT modified (0)
+  - cli/commands/doctor.ts: NOT modified (0)
+  - mcp_config.json: NOT modified (0)
+
+---
+
+Key changes:
+  - Template SSOT: inline TECH_TEMPLATE constant removed, now reads docs/TECH_TEMPLATE.md
+    via import.meta.url -> fileURLToPath -> __dirname resolution (ESM-safe)
+  - Quality gate: validateTechMd() checks for ${...} residuals and 6 required sections
+  - Reproducibility: evidence_pack.yaml.inputs.file_hashes has SPEC + TECH_TEMPLATE sha256
+  - Reproducibility: decisions includes "spec_to_tech_v1" version string
+  - --dry-run: reports paths, hashes, validation without writing any files

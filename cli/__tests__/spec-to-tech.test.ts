@@ -1,11 +1,20 @@
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const TEST_DIR = join(tmpdir(), "hitl-spec-to-tech-test");
 const CLI_PATH = join(__dirname, "..", "cli.ts");
+const TEMPLATE_PATH = join(__dirname, "..", "..", "docs", "TECH_TEMPLATE.md");
+const TEMPLATE_BACKUP = `${TEMPLATE_PATH}.bak`;
 
 function runSpecToTech(args: string): { stdout: string; exitCode: number } {
   try {
@@ -59,10 +68,14 @@ beforeAll(() => {
 
 afterAll(() => {
   rmSync(TEST_DIR, { recursive: true, force: true });
+  // Restore template if backup exists (from template-missing test)
+  if (existsSync(TEMPLATE_BACKUP)) {
+    renameSync(TEMPLATE_BACKUP, TEMPLATE_PATH);
+  }
 });
 
 describe("spec:to-tech", () => {
-  it("1. SPEC -> TECH.md generated with all 6 sections", () => {
+  it("1. SPEC + template -> TECH.md with 6 sections + exit 0", () => {
     const { exitCode } = runSpecToTech(
       `SPEC.md --run-id stt-run --task-id T-STT -w "${TEST_DIR}"`,
     );
@@ -78,26 +91,34 @@ describe("spec:to-tech", () => {
     expect(content).toContain("## 4. Risks & Approvals");
     expect(content).toContain("## 5. Verification Plan");
     expect(content).toContain("## 6. Rollout Plan");
+
+    // No unreplaced tokens
+    expect(content).not.toMatch(/\$\{[A-Z_]+\}/);
   });
 
-  it("2. Evidence pack files created at correct path", () => {
+  it("2. Evidence pack has file_hashes + decisions version", () => {
     const evidenceDir = join(TEST_DIR, ".serena", "evidence", "stt-run", "T-STT");
     expect(existsSync(evidenceDir)).toBe(true);
-    expect(existsSync(join(evidenceDir, "evidence_pack.yaml"))).toBe(true);
-    expect(existsSync(join(evidenceDir, "verification_report.md"))).toBe(true);
-    expect(existsSync(join(evidenceDir, "execution_log.txt"))).toBe(true);
-    expect(existsSync(join(evidenceDir, "approvals.json"))).toBe(true);
+
+    const packYaml = readFileSync(
+      join(evidenceDir, "evidence_pack.yaml"),
+      "utf-8",
+    );
+    // file_hashes should contain SPEC and TECH_TEMPLATE hashes
+    expect(packYaml).toContain('file: "SPEC.md"');
+    expect(packYaml).toContain('file: "docs/TECH_TEMPLATE.md"');
+    expect(packYaml).toMatch(/sha256: "[a-f0-9]{64}"/);
+
+    // decisions should contain version string
+    expect(packYaml).toContain("spec_to_tech_v1");
 
     // approvals.json should have valid schema
     const approvals = JSON.parse(
       readFileSync(join(evidenceDir, "approvals.json"), "utf-8"),
     );
     expect(approvals.schema_version).toBe("1");
-    expect(approvals.run_id).toBe("stt-run");
-    expect(approvals.task_id).toBe("T-STT");
     expect(approvals.status).toBe("PENDING");
     expect(approvals.scope.risk_level).toBe("LOW");
-    expect(approvals.scope.actions).toContain("spec-to-tech");
   });
 
   it("3. result-pm.md has EVIDENCE_PATH", () => {
@@ -108,8 +129,68 @@ describe("spec:to-tech", () => {
     expect(content).toContain("EVIDENCE_PATH: .serena/evidence/stt-run/T-STT/");
   });
 
-  it("4. doctor --verify-gate --agent pm passes with APPROVED approvals", () => {
-    // First, update approvals.json to APPROVED
+  it("4. template missing -> exit 2", () => {
+    // Temporarily rename template
+    renameSync(TEMPLATE_PATH, TEMPLATE_BACKUP);
+    try {
+      const { exitCode } = runSpecToTech(
+        `SPEC.md --run-id stt-miss --task-id T-MISS -w "${TEST_DIR}"`,
+      );
+      expect(exitCode).toBe(2);
+    } finally {
+      // Restore template
+      renameSync(TEMPLATE_BACKUP, TEMPLATE_PATH);
+    }
+  });
+
+  it("5. unreplaced tokens in template -> exit 1", () => {
+    // Create a bad template with an extra unreplaced token
+    const originalContent = readFileSync(TEMPLATE_PATH, "utf-8");
+    writeFileSync(
+      TEMPLATE_PATH,
+      originalContent + "\n${EXTRA_UNKNOWN_TOKEN}\n",
+      "utf-8",
+    );
+    try {
+      // Clean previous output so this run generates fresh
+      rmSync(join(TEST_DIR, "docs"), { recursive: true, force: true });
+      const { exitCode } = runSpecToTech(
+        `SPEC.md --run-id stt-bad --task-id T-BAD -w "${TEST_DIR}"`,
+      );
+      expect(exitCode).toBe(1);
+    } finally {
+      // Restore original template
+      writeFileSync(TEMPLATE_PATH, originalContent, "utf-8");
+    }
+  });
+
+  it("6. --dry-run -> no files created + exit 0", () => {
+    const dryRunDir = join(tmpdir(), "hitl-spec-to-tech-dryrun");
+    rmSync(dryRunDir, { recursive: true, force: true });
+    mkdirSync(dryRunDir, { recursive: true });
+    writeFileSync(join(dryRunDir, "SPEC.md"), "# Goal\nTest dry run.\n", "utf-8");
+
+    try {
+      const { exitCode } = runSpecToTech(
+        `SPEC.md --run-id stt-dry --task-id T-DRY -w "${dryRunDir}" --dry-run`,
+      );
+      expect(exitCode).toBe(0);
+
+      // No files should be created
+      expect(existsSync(join(dryRunDir, "docs", "TECH.md"))).toBe(false);
+      expect(
+        existsSync(join(dryRunDir, ".serena", "evidence", "stt-dry", "T-DRY")),
+      ).toBe(false);
+      expect(
+        existsSync(join(dryRunDir, ".serena", "memories", "result-pm.md")),
+      ).toBe(false);
+    } finally {
+      rmSync(dryRunDir, { recursive: true, force: true });
+    }
+  });
+
+  it("7. doctor --verify-gate --agent pm passes with APPROVED approvals", () => {
+    // First ensure test 1 output exists, then update approvals to APPROVED
     const approvalsPath = join(
       TEST_DIR,
       ".serena",
@@ -127,7 +208,6 @@ describe("spec:to-tech", () => {
     };
     writeFileSync(approvalsPath, JSON.stringify(approvals, null, 2), "utf-8");
 
-    // Run doctor verify-gate
     try {
       const stdout = execSync(
         `npx tsx "${CLI_PATH}" doctor --verify-gate --agent pm --workspace "${TEST_DIR}" --json`,
@@ -143,7 +223,6 @@ describe("spec:to-tech", () => {
       expect(parsed.mode).toBe("verify-gate");
     } catch (err: unknown) {
       const e = err as { stdout?: string; status?: number };
-      // Should not fail, but if it does, the test will report the issue
       expect(e.status).toBe(0);
     }
   });

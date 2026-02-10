@@ -179,11 +179,13 @@ program
   .requiredOption("--run-id <id>", "Run ID for evidence tracking")
   .requiredOption("--task-id <id>", "Task ID for evidence tracking")
   .option("-w, --workspace <path>", "Workspace path", process.cwd())
+  .option("--dry-run", "Show what would be created without writing files")
   .action((specPath, options) => {
     specToTech(specPath, {
       runId: options.runId,
       taskId: options.taskId,
       workspace: options.workspace,
+      dryRun: options.dryRun,
     }).catch(console.error);
   });
 

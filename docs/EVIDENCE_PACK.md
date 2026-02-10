@@ -164,6 +164,8 @@ oh-my-ag verify <agent-type> --workspace <path>
 
 ### 7.4 위험 작업 Guard (cleanup)
 
-- `cleanup --evidence-path <dir>` 로 approvals.json 경로 지정
-- 비 dry-run 실행 시 `approvals.json.status != APPROVED` → **BLOCK (exit 1)**
-- dry-run은 항상 허용
+- 비 dry-run 실행 시 `--evidence-path`는 **필수** (누락 시 즉시 BLOCK, exit 1)
+- `cleanup --evidence-path <.serena/evidence/<run>/<task>>` 로 approvals.json 경로 지정
+- cleanup은 verify와 **동일한** approvals.json 검증을 수행 (스키마 키/상태 enum/decision 일관성/scope non-empty)
+- `approvals.json.status != APPROVED` → **BLOCK (exit 1)**
+- dry-run(`--dry-run`)은 항상 허용 (approvals guard 미적용)

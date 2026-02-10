@@ -11,8 +11,19 @@ export async function cleanup(
   jsonMode = false,
   evidencePath?: string,
 ): Promise<void> {
-  // Approvals guard: non-dry-run requires APPROVED approvals.json
-  if (!dryRun && evidencePath) {
+  // Approvals guard: non-dry-run requires --evidence-path with APPROVED approvals.json
+  if (!dryRun) {
+    if (!evidencePath) {
+      const msg =
+        "Cleanup BLOCKED: --evidence-path is required for non-dry-run cleanup.\n" +
+        "Usage: cleanup --evidence-path <.serena/evidence/<run>/<task>>";
+      if (jsonMode) {
+        console.log(JSON.stringify({ ok: false, error: msg }));
+      } else {
+        p.log.error(msg);
+      }
+      process.exit(1);
+    }
     const approvalsPath = join(evidencePath, "approvals.json");
     const validation = validateApprovalsFile(approvalsPath);
     if (!validation.ok) {

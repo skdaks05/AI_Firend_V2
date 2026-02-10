@@ -80,3 +80,123 @@ Non-touch verified:
 ---
 
 DoD-5: PROOF written (this file)
+
+===================================================================
+HOTFIX-1 ADDENDUM (Baseline: HEAD=e3c5cf9)
+===================================================================
+
+Problem-1: cleanup apply bypass — no --evidence-path → guard skipped
+Problem-2: cleanup guard weak — status-only check, no schema/consistency
+
+Fix-A: validateApprovalsFile() strengthened to full validation
+  (required keys, status enum, decision consistency, scope non-empty)
+  checkEvidencePack() now delegates to this shared function (dedup)
+
+Fix-B: cleanup.ts: !dryRun && !evidencePath → immediate FAIL(exit 1)
+
+---
+
+HOTFIX DoD-1: PENDING → verify FAIL + cleanup BLOCK
+-----------------------------------------------------
+approvals.json: status=PENDING
+
+verify:
+  Command: npx tsx cli/cli.ts verify backend --workspace /tmp/dod-hotfix1 --json
+  Approvals JSON | FAIL | status=PENDING — approval required
+  EXIT=1
+
+cleanup:
+  Command: npx tsx cli/cli.ts cleanup --evidence-path .../T-HF1 --json
+  Output: Cleanup BLOCKED: status=PENDING — approval required
+  EXIT=1
+
+Verdict: PASS
+
+---
+
+HOTFIX DoD-2: APPROVED (valid decision/scope) → verify PASS + cleanup ALLOW
+-----------------------------------------------------------------------------
+approvals.json: status=APPROVED, decision.by="human-reviewer", decision.at set
+
+verify:
+  Approvals JSON | PASS | APPROVED — gate open
+  8 passed, 0 failed, 1 warned
+  EXIT=0
+
+cleanup:
+  Output: {cleaned:0, skipped:1}
+  EXIT=0
+
+Verdict: PASS
+
+---
+
+HOTFIX DoD-3: REJECTED/CANCELLED → verify FAIL + cleanup BLOCK
+----------------------------------------------------------------
+REJECTED:
+  verify:  Approvals JSON | FAIL | status=REJECTED — approval required
+           EXIT=1
+  cleanup: BLOCKED: status=REJECTED — approval required
+           EXIT=1
+
+CANCELLED:
+  verify:  Approvals JSON | FAIL | status=CANCELLED — approval required
+           EXIT=1
+  cleanup: BLOCKED: status=CANCELLED — approval required
+           EXIT=1
+
+Verdict: PASS
+
+---
+
+HOTFIX DoD-4: evidence-path 누락 우회 방지
+--------------------------------------------
+Command: npx tsx cli/cli.ts cleanup --json  (no --evidence-path, non-dry-run)
+Output: Cleanup BLOCKED: --evidence-path is required for non-dry-run cleanup.
+EXIT=1
+
+Verdict: PASS
+
+---
+
+HOTFIX DoD-5: 스키마 불량 차단 (status=APPROVED + decision null)
+-----------------------------------------------------------------
+approvals.json: status=APPROVED, decision.by=null, decision.at=null
+
+verify:
+  Approvals JSON | FAIL | status=APPROVED requires decision.by and decision.at
+  EXIT=1
+
+cleanup:
+  BLOCKED: status=APPROVED requires decision.by and decision.at
+  EXIT=1
+
+Extra: scope.actions=[] (empty array)
+  verify:  FAIL | scope.actions must be a non-empty array, EXIT=1
+  cleanup: BLOCKED: scope.actions must be a non-empty array, EXIT=1
+
+Extra: scope.risk_level missing
+  verify:  FAIL | scope.risk_level must be LOW|MEDIUM|HIGH, EXIT=1
+  cleanup: BLOCKED: scope.risk_level must be LOW|MEDIUM|HIGH, EXIT=1
+
+Extra: scope.risk_level="CRITICAL" (invalid enum)
+  verify:  FAIL | scope.risk_level must be LOW|MEDIUM|HIGH, EXIT=1
+  cleanup: BLOCKED: scope.risk_level must be LOW|MEDIUM|HIGH, EXIT=1
+
+Verdict: PASS (both verify and cleanup use identical full validation)
+
+---
+
+HOTFIX DoD-6: 스코프/Non-touch
+--------------------------------
+Modified files (4):
+  1. cli/commands/verify.ts (validateApprovalsFile strengthened + risk_level, checkEvidencePack deduped)
+  2. cli/commands/cleanup.ts (evidence-path mandatory guard added)
+  3. docs/EVIDENCE_PACK.md (§7.4 updated)
+  4. docs/_canon/PROOF_TICKET4_HITL_APPROVALS.txt (this file)
+
+Non-touch verified:
+  - docs/GOALS.md: NOT modified (0)
+  - AGENT_GUIDE.md: NOT modified (0)
+  - cli/commands/doctor.ts: NOT modified (0)
+  - mcp_config.json: NOT modified (0)

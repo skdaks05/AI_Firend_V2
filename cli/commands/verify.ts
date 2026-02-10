@@ -15,7 +15,7 @@ export type ApprovalsValidation = {
 };
 
 /**
- * Validate an approvals.json file and return status.
+ * Validate an approvals.json file with full schema + consistency checks.
  * Reusable by other commands (e.g. cleanup guard).
  */
 export function validateApprovalsFile(
@@ -30,11 +30,50 @@ export function validateApprovalsFile(
   } catch {
     return { ok: false, status: null, error: "approvals.json is not valid JSON" };
   }
+
+  const REQUIRED_KEYS = [
+    "schema_version", "run_id", "task_id", "status",
+    "requested_by", "requested_at", "decision", "scope",
+  ];
+  const missing = REQUIRED_KEYS.filter((k) => !(k in doc));
+  if (missing.length > 0) {
+    return { ok: false, status: null, error: `Missing keys: ${missing.join(", ")}` };
+  }
+
   const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"];
   const status = doc.status as string;
   if (!VALID_STATUSES.includes(status)) {
-    return { ok: false, status, error: `Invalid status: ${status}` };
+    return { ok: false, status, error: `Invalid status: ${status}. Must be ${VALID_STATUSES.join("|")}` };
   }
+
+  const decision = doc.decision as Record<string, unknown> | undefined;
+  if (!decision || typeof decision !== "object") {
+    return { ok: false, status, error: "decision must be an object" };
+  }
+  if (status !== "PENDING") {
+    if (!decision.by || !decision.at) {
+      return { ok: false, status, error: `status=${status} requires decision.by and decision.at` };
+    }
+  }
+
+  const scope = doc.scope as Record<string, unknown> | undefined;
+  if (!scope || typeof scope !== "object") {
+    return { ok: false, status, error: "scope must be an object" };
+  }
+  const VALID_RISK_LEVELS = ["LOW", "MEDIUM", "HIGH"];
+  const riskLevel = scope.risk_level as string;
+  if (!riskLevel || !VALID_RISK_LEVELS.includes(riskLevel)) {
+    return { ok: false, status, error: `scope.risk_level must be ${VALID_RISK_LEVELS.join("|")}` };
+  }
+  const actions = scope.actions as unknown[];
+  const targets = scope.targets as unknown[];
+  if (!Array.isArray(actions) || actions.length === 0) {
+    return { ok: false, status, error: "scope.actions must be a non-empty array" };
+  }
+  if (!Array.isArray(targets) || targets.length === 0) {
+    return { ok: false, status, error: "scope.targets must be a non-empty array" };
+  }
+
   if (status !== "APPROVED") {
     return { ok: false, status, error: `status=${status} — approval required` };
   }
@@ -559,120 +598,15 @@ function checkEvidencePack(
     createCheck("Evidence Approvals", "pass", "Approval chain valid"),
   );
 
-  // --- approvals.json Stage-4 semantic check ---
+  // --- approvals.json Stage-4 semantic check (delegates to shared validator) ---
   const approvalsJsonPath = join(evidenceDir, "approvals.json");
-  if (!existsSync(approvalsJsonPath)) {
-    checks.push(
-      createCheck("Approvals JSON", "fail", "approvals.json not found"),
-    );
-    return checks;
-  }
-
-  let approvalsDoc: Record<string, unknown>;
-  try {
-    approvalsDoc = JSON.parse(readFileSync(approvalsJsonPath, "utf-8"));
-  } catch {
-    checks.push(
-      createCheck("Approvals JSON", "fail", "approvals.json is not valid JSON"),
-    );
-    return checks;
-  }
-
-  const APPROVALS_REQUIRED_KEYS = [
-    "schema_version",
-    "run_id",
-    "task_id",
-    "status",
-    "requested_by",
-    "requested_at",
-    "decision",
-    "scope",
-  ];
-  const missingAKeys = APPROVALS_REQUIRED_KEYS.filter(
-    (k) => !(k in approvalsDoc),
-  );
-  if (missingAKeys.length > 0) {
+  const approvalsValidation = validateApprovalsFile(approvalsJsonPath);
+  if (!approvalsValidation.ok) {
     checks.push(
       createCheck(
         "Approvals JSON",
         "fail",
-        `Missing keys: ${missingAKeys.join(", ")}`,
-      ),
-    );
-    return checks;
-  }
-
-  const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"];
-  const aStatus = approvalsDoc.status as string;
-  if (!VALID_STATUSES.includes(aStatus)) {
-    checks.push(
-      createCheck(
-        "Approvals JSON",
-        "fail",
-        `Invalid status: ${aStatus}. Must be ${VALID_STATUSES.join("|")}`,
-      ),
-    );
-    return checks;
-  }
-
-  const decision = approvalsDoc.decision as Record<string, unknown> | undefined;
-  if (!decision || typeof decision !== "object") {
-    checks.push(
-      createCheck("Approvals JSON", "fail", "decision must be an object"),
-    );
-    return checks;
-  }
-
-  if (aStatus !== "PENDING") {
-    if (!decision.by || !decision.at) {
-      checks.push(
-        createCheck(
-          "Approvals JSON",
-          "fail",
-          `status=${aStatus} requires decision.by and decision.at`,
-        ),
-      );
-      return checks;
-    }
-  }
-
-  const scope = approvalsDoc.scope as Record<string, unknown> | undefined;
-  if (!scope || typeof scope !== "object") {
-    checks.push(
-      createCheck("Approvals JSON", "fail", "scope must be an object"),
-    );
-    return checks;
-  }
-
-  const actions = scope.actions as unknown[];
-  const targets = scope.targets as unknown[];
-  if (!Array.isArray(actions) || actions.length === 0) {
-    checks.push(
-      createCheck(
-        "Approvals JSON",
-        "fail",
-        "scope.actions must be a non-empty array",
-      ),
-    );
-    return checks;
-  }
-  if (!Array.isArray(targets) || targets.length === 0) {
-    checks.push(
-      createCheck(
-        "Approvals JSON",
-        "fail",
-        "scope.targets must be a non-empty array",
-      ),
-    );
-    return checks;
-  }
-
-  if (aStatus !== "APPROVED") {
-    checks.push(
-      createCheck(
-        "Approvals JSON",
-        "fail",
-        `status=${aStatus} — approval required (must be APPROVED)`,
+        approvalsValidation.error || "validation failed",
       ),
     );
     return checks;

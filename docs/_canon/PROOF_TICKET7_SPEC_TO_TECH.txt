@@ -1,0 +1,95 @@
+TICKET-7 SPEC-TO-TECH CONTRACT MVP — Definition of Done Proof
+==============================================================
+
+Baseline: HEAD=20811a9
+Worktree: clean
+
+---
+
+DoD-1: spec:to-tech generates TECH.md with 6 sections
+-------------------------------------------------------
+Command: npx tsx cli/cli.ts spec:to-tech SPEC.md --run-id stt-run --task-id T-STT -w <tmp>
+Output:
+  docs/TECH.md created with sections:
+    1. Goal Summary
+    2. Scope (In/Out)
+    3. Architecture
+    4. Risks & Approvals
+    5. Verification Plan
+    6. Rollout Plan
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-2: Evidence pack files created
+------------------------------------
+Path: .serena/evidence/stt-run/T-STT/
+Files:
+  - evidence_pack.yaml (run_id, task_id, timestamp_kst, artifacts, inputs, decisions, tests, approvals)
+  - verification_report.md
+  - execution_log.txt
+  - approvals.json (schema_version, run_id, task_id, status=PENDING, scope.risk_level=LOW)
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-3: result-pm.md EVIDENCE_PATH recorded
+---------------------------------------------
+File: .serena/memories/result-pm.md
+Content: EVIDENCE_PATH: .serena/evidence/stt-run/T-STT/
+
+Verdict: PASS
+
+---
+
+DoD-4: doctor --verify-gate --agent pm PASS after APPROVED
+-------------------------------------------------------------
+Command: npx tsx cli/cli.ts doctor --verify-gate --agent pm --workspace <tmp> --json
+Prerequisite: approvals.json status set to APPROVED with decision.by/at filled
+Output:
+  ok: true
+  mode: "verify-gate"
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-5: test:hitl full PASS
+----------------------------
+Command: npm run --workspace cli test:hitl
+Output:
+  verify.approvals.test.ts     (11 tests)  68ms
+  spec-to-tech.test.ts         (4 tests)   7951ms
+  cleanup.guard.test.ts        (3 tests)   11202ms
+  doctor.verify-gate.test.ts   (4 tests)   22251ms
+  Test Files: 4 passed (4)
+  Tests:     22 passed (22)
+  Duration:  22.70s
+EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-6: Scope / Non-touch
+--------------------------
+New files:
+  1. cli/commands/spec_to_tech.ts (spec:to-tech command)
+  2. cli/__tests__/spec-to-tech.test.ts (4 test cases)
+  3. docs/TECH_TEMPLATE.md (template reference)
+  4. docs/_canon/PROOF_TICKET7_SPEC_TO_TECH.txt (this file)
+
+Modified files:
+  5. cli/cli.ts (spec:to-tech command registration + import)
+  6. cli/package.json (test:hitl updated)
+
+Non-touch verified:
+  - docs/GOALS.md: NOT modified (0)
+  - AGENT_GUIDE.md: NOT modified (0)
+  - cli/commands/doctor.ts: NOT modified (0)
+  - mcp_config.json: NOT modified (0)

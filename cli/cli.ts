@@ -6,6 +6,7 @@ import { cleanup } from "./commands/cleanup.js";
 import { doctor } from "./commands/doctor.js";
 import { initEvidence } from "./commands/evidence_init.js";
 import { install } from "./commands/install.js";
+import { specToTech } from "./commands/spec_to_tech.js";
 import { initMemory } from "./commands/memory.js";
 import { retro } from "./commands/retro.js";
 import { stats } from "./commands/stats.js";
@@ -170,6 +171,20 @@ program
   .option("--json", "Output as JSON")
   .action((agentType, options) => {
     verify(agentType, options.workspace, options.json).catch(console.error);
+  });
+
+program
+  .command("spec:to-tech <spec-path>")
+  .description("Generate TECH.md from SPEC.md with evidence pack")
+  .requiredOption("--run-id <id>", "Run ID for evidence tracking")
+  .requiredOption("--task-id <id>", "Task ID for evidence tracking")
+  .option("-w, --workspace <path>", "Workspace path", process.cwd())
+  .action((specPath, options) => {
+    specToTech(specPath, {
+      runId: options.runId,
+      taskId: options.taskId,
+      workspace: options.workspace,
+    }).catch(console.error);
   });
 
 program.parse();

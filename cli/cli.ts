@@ -4,6 +4,7 @@ import { checkStatus, spawnAgent } from "./commands/agent.js";
 import { bridge } from "./commands/bridge.js";
 import { cleanup } from "./commands/cleanup.js";
 import { doctor } from "./commands/doctor.js";
+import { initEvidence } from "./commands/evidence_init.js";
 import { install } from "./commands/install.js";
 import { initMemory } from "./commands/memory.js";
 import { retro } from "./commands/retro.js";
@@ -134,6 +135,18 @@ program
   .option("--force", "Overwrite empty or existing schema files")
   .action((options) => {
     initMemory(options.json, options.force).catch(console.error);
+  });
+
+program
+  .command("evidence:init <run-id> <task-id>")
+  .description("Initialize Evidence Pack skeleton in .serena/evidence")
+  .option("--dry-run", "Show what would be created without writing files")
+  .option("--force", "Overwrite existing evidence directory")
+  .action((runId, taskId, options) => {
+    initEvidence(runId, taskId, {
+      dryRun: options.dryRun,
+      force: options.force,
+    }).catch(console.error);
   });
 
 program

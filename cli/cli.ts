@@ -88,8 +88,14 @@ program
   .description("Clean up orphaned subagent processes and temp files")
   .option("--dry-run", "Show what would be cleaned without making changes")
   .option("--json", "Output as JSON")
+  .option(
+    "--evidence-path <path>",
+    "Evidence directory for approvals guard (required for apply)",
+  )
   .action((options) => {
-    cleanup(options.dryRun, options.json).catch(console.error);
+    cleanup(options.dryRun, options.json, options.evidencePath).catch(
+      console.error,
+    );
   });
 
 program

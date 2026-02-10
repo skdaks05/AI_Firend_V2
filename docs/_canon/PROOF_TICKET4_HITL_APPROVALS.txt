@@ -1,0 +1,82 @@
+TICKET-4 HITL APPROVALS — Definition of Done Proof
+====================================================
+
+Baseline: HEAD=3b473c3 (fix(evidence-init): align skeleton with 9-key verify schema)
+Worktree: clean
+
+---
+
+DoD-1: PENDING → verify FAIL + cleanup BLOCK
+----------------------------------------------
+approvals.json: status=PENDING (evidence:init default)
+
+verify:
+  Command: npx tsx cli/cli.ts verify backend --workspace /tmp/dod-hitl
+  Approvals JSON | FAIL | status=PENDING — approval required (must be APPROVED)
+  EXIT=1
+
+cleanup:
+  Command: npx tsx cli/cli.ts cleanup --evidence-path .../hitl-test/T-004
+  Output: Cleanup BLOCKED: status=PENDING — approval required
+  EXIT=1
+
+Verdict: PASS
+
+---
+
+DoD-2: APPROVED → verify PASS + cleanup ALLOW
+-----------------------------------------------
+approvals.json: status=APPROVED, decision.by="human-reviewer", decision.at set
+
+verify:
+  Command: npx tsx cli/cli.ts verify backend --workspace /tmp/dod-hitl
+  Approvals JSON | PASS | APPROVED — gate open
+  8 passed, 0 failed, 1 warned
+  EXIT=0
+
+cleanup:
+  Command: npx tsx cli/cli.ts cleanup --evidence-path .../hitl-test/T-004
+  Output: Cleanup complete! (16 cleaned, 1 skipped)
+  EXIT=0
+
+Verdict: PASS
+
+---
+
+DoD-3: REJECTED/CANCELLED → verify FAIL + cleanup BLOCK
+---------------------------------------------------------
+REJECTED:
+  verify:  Approvals JSON | FAIL | status=REJECTED — approval required
+           EXIT=1
+  cleanup: BLOCKED: status=REJECTED — approval required
+           EXIT=1
+
+CANCELLED:
+  verify:  ok=false (Approvals JSON FAIL)
+           EXIT=1
+  cleanup: BLOCKED: status=CANCELLED — approval required
+           EXIT=1
+
+Verdict: PASS (both statuses correctly blocked)
+
+---
+
+DoD-4: Scope / Non-touch
+--------------------------
+Modified files:
+  1. cli/cli.ts
+  2. cli/commands/cleanup.ts
+  3. cli/commands/evidence_init.ts
+  4. cli/commands/verify.ts
+  5. docs/EVIDENCE_PACK.md
+  6. docs/_canon/PROOF_TICKET4_HITL_APPROVALS.txt (this file)
+
+Non-touch verified:
+  - docs/GOALS.md: NOT modified
+  - AGENT_GUIDE.md: NOT modified
+  - cli/commands/doctor.ts: NOT modified
+  - mcp_config.json: NOT modified
+
+---
+
+DoD-5: PROOF written (this file)

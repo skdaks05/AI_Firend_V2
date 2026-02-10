@@ -118,10 +118,52 @@ oh-my-ag verify <agent-type> --workspace <path>
 7. `decisions` 배열 타입 확인
 8. `tests` 배열 타입 확인
 9. `approvals.hitl_required=true` → `hitl_decision_ref` 존재 확인
-10. 위 중 하나라도 실패 → **FAIL (exit 1)**
+10. `approvals.json` 파싱 + Stage-4 스키마/상태 검증 (아래 §7 참조)
+11. `approvals.json.status != APPROVED` → **FAIL (exit 1)**
+12. 위 중 하나라도 실패 → **FAIL (exit 1)**
 
-### approvals.json 방침
+## 7. approvals.json (Stage-4 HITL)
 
-- `evidence:init`이 `approvals.json`을 함께 생성하지만, **verify에서 approvals.json 존재 여부는 검증하지 않는다**.
-- `evidence_pack.yaml` 내부의 `approvals` 키만 검증 대상이다.
-- HITL 의미론적 검증(상태 머신)은 TICKET-4 HITL 단계에서 별도 구현 예정이다.
+### 7.1 상태 모델
+
+| status | 의미 | 위험 작업 | verify |
+|--------|------|-----------|--------|
+| `PENDING` | 승인 요청됨, 결정 없음 | **BLOCK** | **FAIL** |
+| `APPROVED` | 승인 완료 | **ALLOW** | **PASS** |
+| `REJECTED` | 거절 | **BLOCK** | **FAIL** |
+| `CANCELLED` | 요청 취소 | **BLOCK** | **FAIL** |
+
+### 7.2 최소 스키마
+
+```json
+{
+  "schema_version": "1",
+  "run_id": "RUN_...",
+  "task_id": "TICKET-4",
+  "status": "PENDING|APPROVED|REJECTED|CANCELLED",
+  "requested_by": "agent",
+  "requested_at": "2026-02-10T14:05:00+09:00",
+  "decision": {
+    "by": "string|null",
+    "at": "ISO-8601|null",
+    "reason": "string|null"
+  },
+  "scope": {
+    "risk_level": "LOW|MEDIUM|HIGH",
+    "actions": ["verify"],
+    "targets": [".serena/evidence/run/task/"]
+  }
+}
+```
+
+### 7.3 필드 일관성 규칙
+
+- `status=PENDING`: `decision.by/at/reason`은 `null` 허용
+- `status=APPROVED|REJECTED|CANCELLED`: `decision.by`와 `decision.at` **필수**
+- `scope.actions/targets`: 빈 배열 금지 (최소 1개)
+
+### 7.4 위험 작업 Guard (cleanup)
+
+- `cleanup --evidence-path <dir>` 로 approvals.json 경로 지정
+- 비 dry-run 실행 시 `approvals.json.status != APPROVED` → **BLOCK (exit 1)**
+- dry-run은 항상 허용

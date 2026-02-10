@@ -4,8 +4,30 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { CleanupResult } from "../types/index.js";
+import { validateApprovalsFile } from "./verify.js";
 
-export async function cleanup(dryRun = false, jsonMode = false): Promise<void> {
+export async function cleanup(
+  dryRun = false,
+  jsonMode = false,
+  evidencePath?: string,
+): Promise<void> {
+  // Approvals guard: non-dry-run requires APPROVED approvals.json
+  if (!dryRun && evidencePath) {
+    const approvalsPath = join(evidencePath, "approvals.json");
+    const validation = validateApprovalsFile(approvalsPath);
+    if (!validation.ok) {
+      const msg =
+        `Cleanup BLOCKED: ${validation.error}\n` +
+        `Set status to APPROVED in ${approvalsPath} before applying cleanup.`;
+      if (jsonMode) {
+        console.log(JSON.stringify({ ok: false, error: msg }));
+      } else {
+        p.log.error(msg);
+      }
+      process.exit(1);
+    }
+  }
+
   const cwd = process.cwd();
   const resultsDir = join(cwd, ".agent", "results");
   const tmpDir = tmpdir();

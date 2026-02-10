@@ -78,13 +78,24 @@ export async function initEvidence(
     },
     {
       name: "approvals.json",
-      content: [
-        "{",
-        "  \"hitl_required\": false,",
-        "  \"hitl_decision_ref\": null",
-        "}",
-        "",
-      ].join("\n"),
+      content: JSON.stringify(
+        {
+          schema_version: "1",
+          run_id: safeRunId,
+          task_id: safeTaskId,
+          status: "PENDING",
+          requested_by: "agent",
+          requested_at: timestampKst,
+          decision: { by: null, at: null, reason: null },
+          scope: {
+            risk_level: "LOW",
+            actions: ["verify"],
+            targets: [`.serena/evidence/${safeRunId}/${safeTaskId}/`],
+          },
+        },
+        null,
+        2,
+      ) + "\n",
     },
   ];
 

@@ -1,0 +1,73 @@
+TICKET-5 TEST-CI LOCK — Definition of Done Proof
+==================================================
+
+Baseline: HEAD=5b1983c
+Worktree: clean (TICKET-4 HOTFIX-1 committed)
+
+---
+
+DoD-1: npm run --workspace cli test:hitl PASS
+-----------------------------------------------
+Command: npm run --workspace cli test:hitl
+Output:
+  verify.approvals.test.ts (11 tests) 165ms
+  cleanup.guard.test.ts    (3 tests)  9640ms
+  Test Files: 2 passed (2)
+  Tests:     14 passed (14)
+  Duration:  10.03s
+EXIT=0
+
+verify.approvals test cases:
+  1.  file not found -> fail                       PASS
+  2.  invalid JSON -> fail                         PASS
+  3.  missing required keys -> fail                PASS
+  4.  invalid status value -> fail                 PASS
+  5.  PENDING -> fail                              PASS
+  6.  APPROVED + decision.by/at null -> fail        PASS
+  7.  APPROVED + scope.risk_level missing -> fail   PASS
+  8.  APPROVED + scope.risk_level=CRITICAL -> fail  PASS
+  9.  APPROVED + scope.actions=[] -> fail           PASS
+  10. APPROVED + scope.targets=[] -> fail           PASS
+  11. APPROVED + valid schema -> pass               PASS
+
+cleanup.guard test cases (CLI-based):
+  1. non-dry-run + no --evidence-path -> exit 1    PASS
+  2. non-dry-run + PENDING approvals -> exit 1     PASS
+  3. non-dry-run + APPROVED(valid) -> no BLOCK     PASS
+
+Verdict: PASS
+
+---
+
+DoD-2: CI workflow YAML valid + targets HITL tests only
+---------------------------------------------------------
+File: .github/workflows/hitl_guard.yml
+Trigger: pull_request + push(main)
+Steps: checkout -> setup-node@v4 (node 20) -> npm ci -> npm run --workspace cli test:hitl
+Target: only verify.approvals.test.ts and cleanup.guard.test.ts (no legacy tests)
+
+Verdict: PASS
+
+---
+
+DoD-3: Non-touch
+------------------
+- docs/GOALS.md: NOT modified (0)
+- AGENT_GUIDE.md: NOT modified (0)
+- cli/commands/doctor.ts: NOT modified (0)
+- mcp_config.json: NOT modified (0)
+- No production code logic changes
+
+Verdict: PASS
+
+---
+
+DoD-4: PROOF written (this file)
+----------------------------------
+
+Files created/modified:
+  1. cli/__tests__/verify.approvals.test.ts (new, 11 test cases)
+  2. cli/__tests__/cleanup.guard.test.ts (new, 3 CLI-based test cases)
+  3. cli/package.json (test:hitl script added)
+  4. .github/workflows/hitl_guard.yml (new)
+  5. docs/_canon/PROOF_TICKET5_TEST_CI_LOCK.txt (this file)

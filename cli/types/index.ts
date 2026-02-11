@@ -4,6 +4,28 @@ export interface ManifestFile {
   size: number;
 }
 
+export const AGENT_TYPES = [
+  "frontend",
+  "backend",
+  "mobile",
+  "qa",
+  "debug",
+  "pm",
+] as const;
+
+export type AgentType = (typeof AGENT_TYPES)[number];
+
+export const EXTENDED_AGENTS = [
+  "orchestrator",
+  "workflow-guide",
+  "commit",
+] as const;
+
+export type ExtendedAgent = (typeof EXTENDED_AGENTS)[number];
+
+export type ProcessStatus = "running" | "exited" | "crashed";
+export type TaskResult = "pending" | "completed" | "failed" | "aborted";
+
 export interface Manifest {
   name: string;
   version: string;
@@ -65,6 +87,11 @@ export interface SkillsRegistry {
   domain: SkillInfo[];
   coordination: SkillInfo[];
   utility: SkillInfo[];
+}
+
+export interface LoopGuard {
+  max_retry: number; // default 3
+  max_wall_time_sec: number; // default 3600
 }
 
 export interface VerifyCheck {

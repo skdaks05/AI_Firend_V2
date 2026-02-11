@@ -66,7 +66,7 @@ See `resources/memory-schema.md` for memory file formats.
 | `orchestrator-session.md` | orchestrator | read-only |
 | `task-board.md` | orchestrator | read-only |
 | `progress-{agent}.md` | that agent | orchestrator reads |
-| `result-{agent}.md` | that agent | orchestrator reads |
+| `result-{agent}.md` | orchestrator (post-spawn extract) | agents read |
 
 ## Verification Gate (PHASE 4.5)
 After each agent completes, run automated verification before accepting the result:

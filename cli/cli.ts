@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { checkStatus, spawnAgent } from "./commands/agent.js";
 import { bridge } from "./commands/bridge.js";
@@ -6,9 +9,9 @@ import { cleanup } from "./commands/cleanup.js";
 import { doctor } from "./commands/doctor.js";
 import { initEvidence } from "./commands/evidence_init.js";
 import { install } from "./commands/install.js";
-import { specToTech } from "./commands/spec_to_tech.js";
 import { initMemory } from "./commands/memory.js";
 import { retro } from "./commands/retro.js";
+import { specToTech } from "./commands/spec_to_tech.js";
 import { stats } from "./commands/stats.js";
 import { update } from "./commands/update.js";
 import { usage } from "./commands/usage.js";
@@ -16,7 +19,31 @@ import { verify } from "./commands/verify.js";
 import { startDashboard } from "./dashboard.js";
 import { startTerminalDashboard } from "./terminal-dashboard.js";
 
-const VERSION = "1.1.1";
+function resolveVersion(): string {
+  const currentDir = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    join(currentDir, "package.json"),
+    join(currentDir, "..", "package.json"),
+  ];
+
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) continue;
+    try {
+      const parsed = JSON.parse(readFileSync(candidate, "utf-8")) as {
+        version?: unknown;
+      };
+      if (typeof parsed.version === "string" && parsed.version.trim()) {
+        return parsed.version;
+      }
+    } catch {
+      // Ignore parse errors and try the next candidate.
+    }
+  }
+
+  return "0.0.0";
+}
+
+const VERSION = resolveVersion();
 
 const program = new Command();
 
@@ -63,8 +90,15 @@ program
   .description("Check CLI installations, MCP configs, and skill status")
   .option("--json", "Output as JSON for CI/CD")
   .option("--verify-gate", "Run verify gate only (skip standard checks)")
-  .option("--agent <type>", "Agent type for verify-gate (backend/frontend/mobile/qa/debug/pm)")
-  .option("-w, --workspace <path>", "Workspace path for verify-gate", process.cwd())
+  .option(
+    "--agent <type>",
+    "Agent type for verify-gate (backend/frontend/mobile/qa/debug/pm)",
+  )
+  .option(
+    "-w, --workspace <path>",
+    "Workspace path for verify-gate",
+    process.cwd(),
+  )
   .action((options) => {
     doctor(options.json, {
       json: options.json,
@@ -169,8 +203,11 @@ program
   .description("Verify subagent output (backend/frontend/mobile/qa/debug/pm)")
   .option("-w, --workspace <path>", "Workspace path", process.cwd())
   .option("--json", "Output as JSON")
+  .option("--refine", "On FAIL, generate refinement_plan.md in evidence dir")
   .action((agentType, options) => {
-    verify(agentType, options.workspace, options.json).catch(console.error);
+    verify(agentType, options.workspace, options.json, options.refine).catch(
+      console.error,
+    );
   });
 
 program

@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const TEST_DIR = join(tmpdir(), "hitl-doctor-gate-test");
@@ -134,15 +134,19 @@ describe("doctor --verify-gate", () => {
     expect(parsed.verify.ok).toBe(true);
   });
 
-  it("3. default doctor mode (no --verify-gate) -> standard schema", { timeout: 30_000 }, () => {
-    const { stdout, exitCode } = runDoctor("--json");
-    // exit 0 or 1 depending on environment, but output should have standard fields
-    const parsed = JSON.parse(stdout);
-    expect(parsed.clis).toBeDefined();
-    expect(parsed.skills).toBeDefined();
-    expect(parsed.serena).toBeDefined();
-    expect(parsed.mode).toBeUndefined();
-  });
+  it(
+    "3. default doctor mode (no --verify-gate) -> standard schema",
+    { timeout: 30_000 },
+    () => {
+      const { stdout, exitCode } = runDoctor("--json");
+      // exit 0 or 1 depending on environment, but output should have standard fields
+      const parsed = JSON.parse(stdout);
+      expect(parsed.clis).toBeDefined();
+      expect(parsed.skills).toBeDefined();
+      expect(parsed.serena).toBeDefined();
+      expect(parsed.mode).toBeUndefined();
+    },
+  );
 
   it("4. --verify-gate without --agent -> exit 2", () => {
     const { stdout, exitCode } = runDoctor("--verify-gate --json");

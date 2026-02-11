@@ -1,6 +1,7 @@
 import * as child_process from "node:child_process";
 import { EventEmitter } from "node:events";
 import type * as http from "node:http";
+import path from "node:path";
 import {
   afterEach,
   beforeEach,
@@ -1007,6 +1008,12 @@ describe("bridge command", () => {
 describe("validateSerenaConfigs", () => {
   let consoleErrorSpy: MockInstance;
 
+  // Cross-platform path constants (path.join produces backslashes on Windows)
+  const MOCK_HOME = "/mock/home";
+  const GLOBAL_CONFIG = path.join(MOCK_HOME, ".serena", "serena_config.yml");
+  const PROJECT1_CONFIG = path.join("/project1", ".serena", "project.yml");
+  const PROJECT2_CONFIG = path.join("/project2", ".serena", "project.yml");
+
   beforeEach(() => {
     vi.clearAllMocks();
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -1035,9 +1042,9 @@ describe("validateSerenaConfigs", () => {
   });
 
   it("should skip projects without project.yml", () => {
-    mockFs.existsSync.mockImplementation((path: string) => {
-      if (path === "/mock/home/.serena/serena_config.yml") return true;
-      if (path === "/project1/.serena/project.yml") return false;
+    mockFs.existsSync.mockImplementation((p: string) => {
+      if (p === GLOBAL_CONFIG) return true;
+      if (p === PROJECT1_CONFIG) return false;
       return false;
     });
     mockFs.readFileSync.mockReturnValue("projects:\n  - /project1\n");
@@ -1049,11 +1056,11 @@ describe("validateSerenaConfigs", () => {
 
   it("should not modify project.yml if languages key already exists", () => {
     mockFs.existsSync.mockReturnValue(true);
-    mockFs.readFileSync.mockImplementation((path: string) => {
-      if (path === "/mock/home/.serena/serena_config.yml") {
+    mockFs.readFileSync.mockImplementation((p: string) => {
+      if (p === GLOBAL_CONFIG) {
         return "projects:\n  - /project1\n";
       }
-      if (path === "/project1/.serena/project.yml") {
+      if (p === PROJECT1_CONFIG) {
         return "project:\n  name: test\n\nlanguages:\n  - python\n";
       }
       return "";
@@ -1066,11 +1073,11 @@ describe("validateSerenaConfigs", () => {
 
   it("should add languages key if missing from project.yml", () => {
     mockFs.existsSync.mockReturnValue(true);
-    mockFs.readFileSync.mockImplementation((path: string) => {
-      if (path === "/mock/home/.serena/serena_config.yml") {
+    mockFs.readFileSync.mockImplementation((p: string) => {
+      if (p === GLOBAL_CONFIG) {
         return "projects:\n  - /project1\n";
       }
-      if (path === "/project1/.serena/project.yml") {
+      if (p === PROJECT1_CONFIG) {
         return "project:\n  name: test\n\nstructure:\n  monorepo: true\n";
       }
       return "";
@@ -1079,23 +1086,23 @@ describe("validateSerenaConfigs", () => {
     validateSerenaConfigs();
 
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      "/project1/.serena/project.yml",
+      PROJECT1_CONFIG,
       expect.stringContaining("languages:"),
     );
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      "/project1/.serena/project.yml",
+      PROJECT1_CONFIG,
       expect.stringContaining("- python"),
     );
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      "/project1/.serena/project.yml",
+      PROJECT1_CONFIG,
       expect.stringContaining("- typescript"),
     );
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      "/project1/.serena/project.yml",
+      PROJECT1_CONFIG,
       expect.stringContaining("- dart"),
     );
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      "/project1/.serena/project.yml",
+      PROJECT1_CONFIG,
       expect.stringContaining("- terraform"),
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -1108,14 +1115,14 @@ describe("validateSerenaConfigs", () => {
 
   it("should handle multiple projects", () => {
     mockFs.existsSync.mockReturnValue(true);
-    mockFs.readFileSync.mockImplementation((path: string) => {
-      if (path === "/mock/home/.serena/serena_config.yml") {
+    mockFs.readFileSync.mockImplementation((p: string) => {
+      if (p === GLOBAL_CONFIG) {
         return "projects:\n  - /project1\n  - /project2\n";
       }
-      if (path === "/project1/.serena/project.yml") {
+      if (p === PROJECT1_CONFIG) {
         return "project:\n  name: test1\n\nlanguages:\n  - python\n";
       }
-      if (path === "/project2/.serena/project.yml") {
+      if (p === PROJECT2_CONFIG) {
         return "project:\n  name: test2\n\nstructure:\n  monorepo: true\n";
       }
       return "";
@@ -1125,7 +1132,7 @@ describe("validateSerenaConfigs", () => {
 
     expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      "/project2/.serena/project.yml",
+      PROJECT2_CONFIG,
       expect.stringContaining("languages:"),
     );
   });

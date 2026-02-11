@@ -87,11 +87,12 @@ Also use memory read tool to poll `progress-{agent}.md` for logic updates.
 For each completed agent, run automated verification:
 
 ```
-bash .agent/skills/_shared/verify.sh {agent-type} {workspace}
+oh-my-ag verify {agent-type} -w {workspace}
 ```
 
 - PASS (exit 0): accept result.
 - FAIL (exit 1): re-spawn with error context (max 2 retries).
+- ABORTED (exit 3): agent was terminated by Loop Guard — skip verification, report to user.
 
 ---
 

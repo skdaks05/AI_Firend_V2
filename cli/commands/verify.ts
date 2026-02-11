@@ -1,12 +1,15 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import YAML from "yaml";
-import type { VerifyCheck, VerifyResult } from "../types/index.js";
-
-type AgentType = "backend" | "frontend" | "mobile" | "qa" | "debug" | "pm";
+import {
+  AGENT_TYPES,
+  type AgentType,
+  type VerifyCheck,
+  type VerifyResult,
+} from "../types/index.js";
 
 export type ApprovalsValidation = {
   ok: boolean;
@@ -18,9 +21,7 @@ export type ApprovalsValidation = {
  * Validate an approvals.json file with full schema + consistency checks.
  * Reusable by other commands (e.g. cleanup guard).
  */
-export function validateApprovalsFile(
-  filePath: string,
-): ApprovalsValidation {
+export function validateApprovalsFile(filePath: string): ApprovalsValidation {
   if (!existsSync(filePath)) {
     return { ok: false, status: null, error: "approvals.json not found" };
   }
@@ -28,22 +29,40 @@ export function validateApprovalsFile(
   try {
     doc = JSON.parse(readFileSync(filePath, "utf-8"));
   } catch {
-    return { ok: false, status: null, error: "approvals.json is not valid JSON" };
+    return {
+      ok: false,
+      status: null,
+      error: "approvals.json is not valid JSON",
+    };
   }
 
   const REQUIRED_KEYS = [
-    "schema_version", "run_id", "task_id", "status",
-    "requested_by", "requested_at", "decision", "scope",
+    "schema_version",
+    "run_id",
+    "task_id",
+    "status",
+    "requested_by",
+    "requested_at",
+    "decision",
+    "scope",
   ];
   const missing = REQUIRED_KEYS.filter((k) => !(k in doc));
   if (missing.length > 0) {
-    return { ok: false, status: null, error: `Missing keys: ${missing.join(", ")}` };
+    return {
+      ok: false,
+      status: null,
+      error: `Missing keys: ${missing.join(", ")}`,
+    };
   }
 
   const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"];
   const status = doc.status as string;
   if (!VALID_STATUSES.includes(status)) {
-    return { ok: false, status, error: `Invalid status: ${status}. Must be ${VALID_STATUSES.join("|")}` };
+    return {
+      ok: false,
+      status,
+      error: `Invalid status: ${status}. Must be ${VALID_STATUSES.join("|")}`,
+    };
   }
 
   const decision = doc.decision as Record<string, unknown> | undefined;
@@ -52,7 +71,11 @@ export function validateApprovalsFile(
   }
   if (status !== "PENDING") {
     if (!decision.by || !decision.at) {
-      return { ok: false, status, error: `status=${status} requires decision.by and decision.at` };
+      return {
+        ok: false,
+        status,
+        error: `status=${status} requires decision.by and decision.at`,
+      };
     }
   }
 
@@ -63,15 +86,27 @@ export function validateApprovalsFile(
   const VALID_RISK_LEVELS = ["LOW", "MEDIUM", "HIGH"];
   const riskLevel = scope.risk_level as string;
   if (!riskLevel || !VALID_RISK_LEVELS.includes(riskLevel)) {
-    return { ok: false, status, error: `scope.risk_level must be ${VALID_RISK_LEVELS.join("|")}` };
+    return {
+      ok: false,
+      status,
+      error: `scope.risk_level must be ${VALID_RISK_LEVELS.join("|")}`,
+    };
   }
   const actions = scope.actions as unknown[];
   const targets = scope.targets as unknown[];
   if (!Array.isArray(actions) || actions.length === 0) {
-    return { ok: false, status, error: "scope.actions must be a non-empty array" };
+    return {
+      ok: false,
+      status,
+      error: "scope.actions must be a non-empty array",
+    };
   }
   if (!Array.isArray(targets) || targets.length === 0) {
-    return { ok: false, status, error: "scope.targets must be a non-empty array" };
+    return {
+      ok: false,
+      status,
+      error: "scope.targets must be a non-empty array",
+    };
   }
 
   if (status !== "APPROVED") {
@@ -80,14 +115,7 @@ export function validateApprovalsFile(
   return { ok: true, status: "APPROVED", error: null };
 }
 
-const VALID_AGENTS: AgentType[] = [
-  "backend",
-  "frontend",
-  "mobile",
-  "qa",
-  "debug",
-  "pm",
-];
+const VALID_AGENTS: AgentType[] = [...AGENT_TYPES];
 
 function createCheck(
   name: string,
@@ -391,11 +419,7 @@ function checkEvidencePack(
 
   if (!existsSync(resultFile)) {
     checks.push(
-      createCheck(
-        "Evidence Path",
-        "fail",
-        `result-${agentType}.md not found`,
-      ),
+      createCheck("Evidence Path", "fail", `result-${agentType}.md not found`),
     );
     return checks;
   }
@@ -436,9 +460,7 @@ function checkEvidencePack(
 
   for (const file of requiredFiles) {
     if (!existsSync(join(evidenceDir, file))) {
-      checks.push(
-        createCheck("Evidence Files", "fail", `Missing: ${file}`),
-      );
+      checks.push(createCheck("Evidence Files", "fail", `Missing: ${file}`));
       return checks;
     }
   }
@@ -507,11 +529,7 @@ function checkEvidencePack(
   }
 
   const artifacts = pack.artifacts as Record<string, unknown> | undefined;
-  if (
-    !artifacts ||
-    typeof artifacts !== "object" ||
-    !("paths" in artifacts)
-  ) {
+  if (!artifacts || typeof artifacts !== "object" || !("paths" in artifacts)) {
     checks.push(
       createCheck("Evidence Schema", "fail", "artifacts.paths is required"),
     );
@@ -612,9 +630,7 @@ function checkEvidencePack(
     return checks;
   }
 
-  checks.push(
-    createCheck("Approvals JSON", "pass", "APPROVED — gate open"),
-  );
+  checks.push(createCheck("Approvals JSON", "pass", "APPROVED — gate open"));
 
   return checks;
 }
@@ -677,11 +693,16 @@ function runAgentChecks(
 export function runVerify(
   agentType: string,
   workspace: string,
-): { result: VerifyResult; exitCode: number } | { error: string; exitCode: number } {
+):
+  | { result: VerifyResult; exitCode: number }
+  | { error: string; exitCode: number } {
   const normalizedAgent = agentType.toLowerCase() as AgentType;
 
   if (!VALID_AGENTS.includes(normalizedAgent)) {
-    return { error: `Invalid agent type: ${agentType}. Valid types: ${VALID_AGENTS.join(", ")}`, exitCode: 2 };
+    return {
+      error: `Invalid agent type: ${agentType}. Valid types: ${VALID_AGENTS.join(", ")}`,
+      exitCode: 2,
+    };
   }
 
   const resolvedWorkspace = workspace || process.cwd();
@@ -690,15 +711,31 @@ export function runVerify(
     return { error: `Workspace not found: ${resolvedWorkspace}`, exitCode: 2 };
   }
 
+  // Check for aborted status (Loop Guard) — exit 3: unverifiable
+  const resultFilePath = join(
+    resolvedWorkspace,
+    ".serena",
+    "memories",
+    `result-${normalizedAgent}.md`,
+  );
+  if (existsSync(resultFilePath)) {
+    const resultContent = readFileSync(resultFilePath, "utf-8");
+    const statusMatch = resultContent.match(/^## Status:\s*(\S+)/m);
+    if (statusMatch?.[1] === "aborted") {
+      return {
+        error: `Agent ${normalizedAgent} was aborted (Loop Guard). Verification not possible.`,
+        exitCode: 3,
+      };
+    }
+  }
+
   const checks: VerifyCheck[] = [];
 
   checks.push(checkCharterPreflight(resolvedWorkspace, normalizedAgent));
   checks.push(checkHardcodedSecrets(resolvedWorkspace));
   checks.push(checkTodoComments(resolvedWorkspace));
   checks.push(...runAgentChecks(normalizedAgent, resolvedWorkspace));
-  checks.push(
-    ...checkEvidencePack(resolvedWorkspace, normalizedAgent),
-  );
+  checks.push(...checkEvidencePack(resolvedWorkspace, normalizedAgent));
 
   const passed = checks.filter((c) => c.status === "pass").length;
   const failed = checks.filter((c) => c.status === "fail").length;
@@ -719,6 +756,7 @@ export async function verify(
   agentType: string,
   workspace: string,
   jsonMode = false,
+  refine = false,
 ): Promise<void> {
   const outcome = runVerify(agentType, workspace);
 
@@ -733,8 +771,19 @@ export async function verify(
 
   const { result } = outcome;
 
+  // SSOT State Progression (Contract 2): update evidence_pack.yaml status
+  updateEvidencePackStatus(result);
+
   if (jsonMode) {
     console.log(JSON.stringify(result, null, 2));
+  }
+
+  // V&R Loop REFINE (Contract 4): on FAIL + --refine, generate refinement_plan.md
+  if (refine && result.summary.failed > 0) {
+    generateRefinementPlan(result);
+  }
+
+  if (jsonMode) {
     process.exit(outcome.exitCode);
   }
 
@@ -783,4 +832,108 @@ export async function verify(
 
   p.outro(pc.green(`✅ Verification passed: ${summaryText}`));
   process.exit(0);
+}
+
+/**
+ * SSOT State Progression (Contract 2):
+ * Update evidence_pack.yaml status field based on verify result.
+ * pending → completed (all checks pass) or failed (any check fails).
+ */
+export function updateEvidencePackStatus(result: VerifyResult): void {
+  const resultFilePath = join(
+    result.workspace,
+    ".serena",
+    "memories",
+    `result-${result.agent}.md`,
+  );
+
+  if (!existsSync(resultFilePath)) return;
+
+  const content = readFileSync(resultFilePath, "utf-8");
+  const pathMatch = content.match(/^EVIDENCE_PATH:\s*(.+)$/m);
+  if (!pathMatch?.[1]) return;
+
+  const yamlPath = join(
+    result.workspace,
+    pathMatch[1].trim(),
+    "evidence_pack.yaml",
+  );
+  if (!existsSync(yamlPath)) return;
+
+  try {
+    const raw = readFileSync(yamlPath, "utf-8");
+    const pack = YAML.parse(raw) as Record<string, unknown>;
+    if (!pack || typeof pack !== "object") return;
+
+    const newStatus = result.ok ? "completed" : "failed";
+    pack.status = newStatus;
+    writeFileSync(yamlPath, YAML.stringify(pack), "utf-8");
+  } catch {
+    // Best-effort: don't fail verify because of status update
+  }
+}
+
+/**
+ * V&R Loop REFINE (Contract 4):
+ * On verify FAIL + --refine, generate a refinement_plan.md skeleton
+ * in the evidence directory with failure reasons and an empty fix plan.
+ */
+function generateRefinementPlan(result: VerifyResult): void {
+  // Find EVIDENCE_PATH from result file
+  const resultFilePath = join(
+    result.workspace,
+    ".serena",
+    "memories",
+    `result-${result.agent}.md`,
+  );
+
+  let evidenceDir: string | null = null;
+  if (existsSync(resultFilePath)) {
+    const content = readFileSync(resultFilePath, "utf-8");
+    const pathMatch = content.match(/^EVIDENCE_PATH:\s*(.+)$/m);
+    if (pathMatch?.[1]) {
+      evidenceDir = join(result.workspace, pathMatch[1].trim());
+    }
+  }
+
+  if (!evidenceDir) {
+    p.log.warn("Cannot generate refinement plan: EVIDENCE_PATH not found");
+    return;
+  }
+
+  if (!existsSync(evidenceDir)) {
+    mkdirSync(evidenceDir, { recursive: true });
+  }
+
+  const failedChecks = result.checks.filter((c) => c.status === "fail");
+  const timestamp = new Date().toISOString();
+
+  const plan = [
+    "# Refinement Plan",
+    "",
+    `**Agent**: ${result.agent}`,
+    `**Generated**: ${timestamp}`,
+    `**Trigger**: verify FAIL (${failedChecks.length} check(s) failed)`,
+    "",
+    "## Failed Checks",
+    "",
+    ...failedChecks.map(
+      (c) => `- **${c.name}**: ${c.message || "No details"}`,
+    ),
+    "",
+    "## Root Cause Analysis",
+    "",
+    "<!-- Fill in the root cause for each failure -->",
+    "",
+    "## Fix Plan",
+    "",
+    "<!-- List concrete steps to address each failure -->",
+    "",
+    "- [ ] ",
+    "",
+  ].join("\n");
+
+  const planPath = join(evidenceDir, "refinement_plan.md");
+  writeFileSync(planPath, plan, "utf-8");
+  p.log.info(`Refinement plan generated: ${planPath}`);
 }

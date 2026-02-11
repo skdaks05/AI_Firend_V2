@@ -9,53 +9,52 @@ active_vendor: gemini
 vendors:
   gemini:
     command: gemini
-    prompt_flag: "-p"
+    prompt_flag: "none"   # → null (disabled): prompt is passed as positional arg
     output_format_flag: "--output-format"
     output_format: "json"
     auto_approve_flag: "--approval-mode=yolo"
-    model_flag: "-m"
-    default_model: "auto"
-    include_dirs_flag: "--include-directories"
-    # JSON output parsing
-    response_jq: ".response"
-    # Isolation: gemini uses current directory context
-    isolation_method: "directory"
+    # Vendor output parser (used by extractResultFromLog adapter)
+    output_parser: "gemini"
 
   claude:
     command: claude
-    prompt_flag: "-p"
+    prompt_flag: "-p"     # → string: explicit flag before prompt content
     output_format_flag: "--output-format"
     output_format: "json"
     auto_approve_flag: "--dangerously-skip-permissions"
     model_flag: "--model"
     default_model: "sonnet"
-    # JSON output parsing
-    response_jq: ".result"
-    isolation_method: "flags"
+    output_parser: "claude"
 
   codex:
     command: codex
     subcommand: "exec"
-    prompt_flag: "none"
+    prompt_flag: "none"   # → null (disabled): codex uses positional prompt
     output_format_flag: "--json"
     auto_approve_flag: "--full-auto"
     model_flag: "-m"
     default_model: "gpt-5.3-codex"
-    # Environment variable for isolation
-    isolation_env: "CODEX_HOME=/tmp/codex-subagent-$$"
-    response_jq: ".response"
-    isolation_method: "env"
+    # NOTE: avoid hard-coded CODEX_HOME paths; invalid paths break codex exec
+    # Optional: isolation_env / isolation_flags — supported by code but not set by default
+    # Example: isolation_env: "CODEX_HOME=/tmp/codex-$$"
+    output_parser: "codex"
 
   qwen:
     command: qwen
-    prompt_flag: "-p"
+    prompt_flag: "-p"     # → string: explicit flag before prompt content
     output_format_flag: "--output-format"
     output_format: "json"
     auto_approve_flag: "--yolo"
     model_flag: "-m"
     default_model: "qwen3-coder-plus"
-    response_jq: ".output"
-    isolation_method: "directory"
+    output_parser: "qwen"
+
+# Loop Guard (Contract 7) — safety limits for autonomous agent execution
+loop_guard:
+  # Maximum retry attempts per failed agent (orchestrator-level)
+  max_retry: 3
+  # Maximum wall-clock time per agent spawn in seconds (0 = no limit)
+  max_wall_time_sec: 3600
 
 # SubAgent execution settings
 execution:

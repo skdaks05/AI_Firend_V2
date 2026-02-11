@@ -1,10 +1,10 @@
-import { spawn as spawnProcess } from "node:child_process";
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import color from "picocolors";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
+import { spawnVendor } from "../lib/process.js";
 
 // Helper to check if process with PID is running
 function isProcessRunning(pid: number): boolean {
@@ -24,7 +24,7 @@ type UserPreferences = {
 type VendorConfig = {
   command?: string;
   subcommand?: string;
-  prompt_flag?: string;
+  prompt_flag?: string | null;
   auto_approve_flag?: string;
   output_format_flag?: string;
   output_format?: string;
@@ -32,11 +32,16 @@ type VendorConfig = {
   default_model?: string;
   isolation_env?: string;
   isolation_flags?: string;
+  output_parser?: string;
 };
 
 type CliConfig = {
   active_vendor?: string;
   vendors: Record<string, VendorConfig>;
+  loop_guard?: {
+    max_retry?: number;
+    max_wall_time_sec?: number;
+  };
 };
 
 function splitArgs(value: string): string[] {
@@ -67,6 +72,16 @@ const VendorConfigSchema = z
   .object({
     command: z.string().optional(),
     subcommand: z.string().optional(),
+    /**
+     * prompt_flag — 3-value semantics (do NOT collapse):
+     *
+     *   undefined  = key absent in config → resolvePromptFlag() uses vendor default
+     *   null       = "none" / "null" / "" in config → prompt flag disabled (arg omitted)
+     *   string     = explicit flag value (e.g. "-p")
+     *
+     * The transform below converts YAML sentinel strings to null while
+     * preserving undefined (key absent) as-is.
+     */
     prompt_flag: z
       .string()
       .optional()
@@ -89,22 +104,51 @@ const VendorConfigSchema = z
     default_model: z.string().optional(),
     isolation_env: z.string().optional(),
     isolation_flags: z.string().optional(),
+    output_parser: z.string().optional(),
   })
   .passthrough()
-  .transform((value) => ({
-    ...value,
-    prompt_flag: value.prompt_flag ?? undefined,
-  }));
+  .transform((value) => {
+    // Backward-compat shim: response_jq → output_parser (1-release transition)
+    // Normalizes jq expressions to vendor parser keys
+    const JQ_TO_PARSER: Record<string, string> = {
+      ".response": "gemini", // gemini uses json.response
+      ".result": "claude",   // claude uses json.result
+      ".output": "qwen",     // qwen uses json.output
+    };
+    const raw = value as Record<string, unknown>;
+    if (raw.response_jq && !value.output_parser) {
+      if (process.env.NODE_ENV !== "test") {
+        console.warn(
+          color.yellow("[DEPRECATED] response_jq → output_parser로 이전하세요"),
+        );
+      }
+      const jqVal = String(raw.response_jq);
+      value.output_parser = JQ_TO_PARSER[jqVal] ?? jqVal;
+    }
+    return {
+      ...value,
+      prompt_flag: value.prompt_flag,
+    };
+  });
+
+const LoopGuardSchema = z
+  .object({
+    max_retry: z.number().int().min(0).default(3),
+    max_wall_time_sec: z.number().int().min(0).default(3600),
+  })
+  .optional();
 
 const CliConfigSchema = z
   .object({
     active_vendor: z.string().optional(),
-    vendors: z.record(VendorConfigSchema).optional(),
+    vendors: z.record(z.string(), VendorConfigSchema).optional(),
+    loop_guard: LoopGuardSchema,
   })
   .passthrough()
   .transform((value) => ({
     active_vendor: value.active_vendor,
     vendors: value.vendors ?? {},
+    loop_guard: value.loop_guard,
   }));
 
 function parseYamlValue(content: string): unknown {
@@ -126,6 +170,14 @@ function parseCliConfig(content: string): CliConfig {
   const parsed = parseYamlValue(content);
   const result = CliConfigSchema.safeParse(parsed);
   if (!result.success) return { vendors: {} };
+
+  if (process.env.OH_MY_AG_DEBUG_PARSE === "1") {
+    console.log(
+      color.dim(
+        `  Parse Debug vendors.gemini=${JSON.stringify(result.data.vendors?.gemini)}`,
+      ),
+    );
+  }
 
   const vendors: Record<string, VendorConfig> = {};
   for (const [vendor, cfg] of Object.entries(result.data.vendors)) {
@@ -191,6 +243,16 @@ function resolveVendor(
   return { vendor: vendor.toLowerCase(), config: cliConfig };
 }
 
+/**
+ * Resolve the prompt flag for a vendor CLI invocation.
+ *
+ * @param vendor    - Resolved vendor name (gemini, claude, codex, qwen)
+ * @param promptFlag - From VendorConfigSchema transform:
+ *   - `undefined` → config key absent → use vendor default below
+ *   - `null`      → config was "none"/"null"/"" → disable prompt flag (omit arg)
+ *   - `string`    → explicit flag (e.g. "-p") → use as-is
+ * @returns The flag string to prepend before prompt content, or null to omit.
+ */
 function resolvePromptFlag(
   vendor: string,
   promptFlag?: string | null,
@@ -206,7 +268,7 @@ function resolvePromptFlag(
     codex: null,
   };
 
-  return defaults[vendor] ?? "-p";
+  return Object.hasOwn(defaults, vendor) ? defaults[vendor] : "-p";
 }
 
 // ============================================================================
@@ -515,6 +577,102 @@ function resolvePromptContent(prompt: string): string {
   return prompt;
 }
 
+// ============================================================================
+// Vendor-specific log parsers (adapter pattern)
+// Each parser extracts the final response from a JSON log line.
+// Returns the extracted string, or null to skip the line.
+// ============================================================================
+
+type VendorParser = (json: Record<string, unknown>) => string | null;
+
+function stringify(val: unknown): string {
+  return typeof val === "string" ? val : JSON.stringify(val);
+}
+
+/** Gemini: response field from JSON output */
+function parseGeminiLine(json: Record<string, unknown>): string | null {
+  if (json.response) return stringify(json.response);
+  return null;
+}
+
+/** Claude: result field from JSON output */
+function parseClaudeLine(json: Record<string, unknown>): string | null {
+  if (json.result) return stringify(json.result);
+  return null;
+}
+
+/** Codex: event stream (item.completed > agent_message) */
+function parseCodexLine(json: Record<string, unknown>): string | null {
+  if (
+    json.type === "item.completed" &&
+    (json.item as Record<string, unknown>)?.type === "agent_message" &&
+    (json.item as Record<string, unknown>)?.text
+  ) {
+    return String((json.item as Record<string, unknown>).text);
+  }
+  if (json.type === "agent_message" && json.text) {
+    return String(json.text);
+  }
+  if (json.response) return stringify(json.response);
+  return null;
+}
+
+/** Qwen: output field from JSON output */
+function parseQwenLine(json: Record<string, unknown>): string | null {
+  if (json.output) return stringify(json.output);
+  return null;
+}
+
+/** Default: tries all known patterns (original heuristic) */
+function parseDefaultLine(json: Record<string, unknown>): string | null {
+  return (
+    parseCodexLine(json) ??
+    parseClaudeLine(json) ??
+    parseGeminiLine(json) ??
+    parseQwenLine(json)
+  );
+}
+
+const VENDOR_PARSERS: Record<string, VendorParser> = {
+  gemini: parseGeminiLine,
+  claude: parseClaudeLine,
+  codex: parseCodexLine,
+  qwen: parseQwenLine,
+  default: parseDefaultLine,
+};
+
+function extractResultFromLog(logFile: string, outputParser?: string): string {
+  if (!fs.existsSync(logFile)) return "No log file generated.";
+
+  const parseFn: VendorParser =
+    VENDOR_PARSERS[outputParser ?? "default"] ?? parseDefaultLine;
+
+  try {
+    const content = fs.readFileSync(logFile, "utf-8");
+    const lines = content.split(/\r?\n/);
+
+    let lastMessage = "";
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        const json = JSON.parse(line) as Record<string, unknown>;
+        const extracted = parseFn(json);
+        if (extracted) lastMessage = extracted;
+      } catch {
+        // Not a JSON line, ignore
+      }
+    }
+
+    if (lastMessage) return lastMessage;
+
+    // Fallback: Return the whole content if no structured message found
+    return content;
+  } catch (e) {
+    return `Error reading log: ${String(e)}`;
+  }
+}
+
 export async function spawnAgent(
   agentId: string,
   prompt: string,
@@ -601,6 +759,20 @@ export async function spawnAgent(
     args.push(promptContent);
   }
 
+  if (process.env.OH_MY_AG_DEBUG_SPAWN === "1") {
+    console.log(
+      color.dim(
+        `  Vendor Debug: requested=${JSON.stringify(vendorOverride || null)} resolved=${JSON.stringify(vendor)}`,
+      ),
+    );
+    console.log(color.dim(`  Vendor Config: ${JSON.stringify(vendorConfig)}`));
+    console.log(
+      color.dim(`  Prompt Flag Resolved: ${JSON.stringify(promptFlag)}`),
+    );
+    console.log(color.dim(`  Command: ${command}`));
+    console.log(color.dim(`  Args: ${JSON.stringify(args)}`));
+  }
+
   const env = { ...process.env };
   if (vendorConfig.isolation_env) {
     const [key, ...rest] = vendorConfig.isolation_env.split("=");
@@ -610,12 +782,13 @@ export async function spawnAgent(
     }
   }
 
-  // Spawn selected CLI
-  const child = spawnProcess(command, args, {
+  // Spawn selected CLI via process wrapper (isolates Bun/@types/node conflicts)
+  const child = spawnVendor(command, args, {
     cwd: resolvedWorkspace,
-    stdio: ["ignore", logStream, logStream], // Redirect stdout/stderr to log file
-    detached: false, // We want to wait for it, behaving like the script
+    stdio: ["ignore", logStream, logStream],
+    detached: false,
     env,
+    shell: process.platform === "win32" && vendor !== "codex",
   });
 
   if (!child.pid) {
@@ -627,10 +800,26 @@ export async function spawnAgent(
   fs.writeFileSync(pidFile, child.pid.toString());
   console.log(color.green(`[${agentId}] Started with PID ${child.pid}`));
 
+  // Loop Guard: wall_time timer (Contract 7)
+  const wallTimeSec = config?.loop_guard?.max_wall_time_sec ?? 3600;
+  let wallTimeAborted = false;
+  let wallTimer: ReturnType<typeof setTimeout> | null = null;
+
+  if (wallTimeSec > 0) {
+    wallTimer = setTimeout(() => {
+      wallTimeAborted = true;
+      console.error(
+        color.red(
+          `[${agentId}] ABORTED: wall_time exceeded (${wallTimeSec}s limit)`,
+        ),
+      );
+      child.kill();
+    }, wallTimeSec * 1000);
+  }
+
   const cleanup = () => {
     try {
       if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile);
-      if (fs.existsSync(logFile)) fs.unlinkSync(logFile);
     } catch (_e) {
       // ignore
     }
@@ -648,10 +837,62 @@ export async function spawnAgent(
   process.on("SIGINT", cleanAndExit);
   process.on("SIGTERM", cleanAndExit);
 
-  child.on("exit", (code) => {
-    console.log(color.blue(`[${agentId}] Exited with code ${code}`));
+  // Handle spawn errors (e.g. ENOENT when command not found)
+  child.on("error", (err: Error) => {
+    console.error(color.red(`[${agentId}] Spawn error: ${err.message}`));
     cleanup();
-    process.exit(code ?? 0);
+    process.exit(1);
+  });
+
+  child.on("exit", (code: number | null) => {
+    // Clear Loop Guard timer on normal exit
+    if (wallTimer) clearTimeout(wallTimer);
+
+    console.log(color.blue(`[${agentId}] Exited with code ${code}`));
+
+    // Capture and save result
+    const result = extractResultFromLog(logFile, vendorConfig.output_parser);
+    const status = wallTimeAborted
+      ? "aborted"
+      : code === 0
+        ? "completed"
+        : "failed";
+    const resultFile = path.join(
+      process.cwd(),
+      ".serena",
+      "memories",
+      `result-${agentId}.md`,
+    );
+    const historyFile = path.join(
+      process.cwd(),
+      ".serena",
+      "memories",
+      `result-${agentId}.history.md`,
+    );
+
+    // Ensure memories directory exists
+    const memoriesDir = path.dirname(resultFile);
+    if (!fs.existsSync(memoriesDir)) {
+      fs.mkdirSync(memoriesDir, { recursive: true });
+    }
+
+    // Snapshot + history: append existing content to history before overwriting
+    if (fs.existsSync(resultFile)) {
+      const prev = fs.readFileSync(resultFile, "utf-8");
+      const timestamp = new Date().toISOString();
+      const separator = `\n---\n_Archived: ${timestamp}_\n\n`;
+      fs.appendFileSync(historyFile, separator + prev);
+    }
+
+    const abortNote = wallTimeAborted
+      ? `\n\nABORTED: wall_time exceeded (${wallTimeSec}s limit)\n`
+      : "";
+    const markdownContent = `## Status: ${status}${abortNote}\n\n${result}`;
+    fs.writeFileSync(resultFile, markdownContent);
+    console.log(color.green(`[${agentId}] Result saved to ${resultFile}`));
+
+    cleanup();
+    process.exit(wallTimeAborted ? 1 : (code ?? 0));
   });
 }
 

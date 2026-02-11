@@ -47,6 +47,11 @@ show_help() {
     echo "  parallel-run.sh --inline \"backend:Implement auth\" \"frontend:Create login\""
 }
 
+if [[ ! -f "$SPAWN_SCRIPT" ]]; then
+    echo -e "${RED}Error: spawn script not found: ${SPAWN_SCRIPT}${NC}"
+    exit 1
+fi
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         --vendor|-v)
@@ -204,13 +209,19 @@ spawn_task() {
     echo -e "    Task: ${task:0:60}..."
     echo -e "    Workspace: ${workspace}"
 
-    VENDOR_FLAG=""
-    [[ -n "$VENDOR" ]] && VENDOR_FLAG="--vendor $VENDOR"
-
-    (
-        "$SPAWN_SCRIPT" "$agent" "$task" "$workspace" $VENDOR_FLAG \
-            > "${RUN_DIR}/${agent}-${idx}.log" 2>&1
-    ) &
+    if [[ -n "$VENDOR" ]]; then
+        (
+            OH_MY_AG_SESSION_ID="parallel-${TIMESTAMP}" \
+            "$SPAWN_SCRIPT" "$agent" "$task" "$workspace" --vendor "$VENDOR" \
+                > "${RUN_DIR}/${agent}-${idx}.log" 2>&1
+        ) &
+    else
+        (
+            OH_MY_AG_SESSION_ID="parallel-${TIMESTAMP}" \
+            "$SPAWN_SCRIPT" "$agent" "$task" "$workspace" \
+                > "${RUN_DIR}/${agent}-${idx}.log" 2>&1
+        ) &
+    fi
 
     PIDS[$!]=$idx
     AGENT_NAMES[$!]=$agent

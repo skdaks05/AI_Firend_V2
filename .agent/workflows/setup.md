@@ -47,9 +47,10 @@ Display results:
 
 Provide installation guide for missing CLIs:
 
-- **gemini**: `npm install -g @anthropic-ai/gemini-cli`
+- **gemini**: `npm install -g @google/gemini-cli`
 - **claude**: `npm install -g @anthropic-ai/claude-code`
-- **codex**: `npm install -g @openai/codex-cli`
+- **codex**: `npm install -g @openai/codex`
+- **qwen**: `npm install -g @qwen-code/qwen-code`
 
 ---
 
@@ -99,8 +100,8 @@ Serena runs as a subprocess for each session. No separate server needed.
 {
   "mcpServers": {
     "serena": {
-      "command": "uv",
-      "args": ["run", "serena", "--project", "/path/to/your/project"]
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server", "--project", "/path/to/your/project"]
     }
   }
 }
@@ -112,22 +113,22 @@ Serena runs as a subprocess for each session. No separate server needed.
 {
   "mcpServers": {
     "serena": {
-      "command": "uv",
-      "args": ["run", "serena", "--project", "/path/to/your/project"],
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server", "--project", "/path/to/your/project"],
       "disabled": false
     }
   }
 }
 ```
 
-### Option B: SSE Mode (Shared Server)
+### Option B: Streamable HTTP Mode (Shared Server)
 
-Serena runs as a shared SSE server. Multiple sessions can share one server instance.
+Serena runs as a shared Streamable HTTP server. Multiple sessions can share one server instance.
 
 **1. Start Serena server:**
 
 ```bash
-serena-mcp-server --port 12341
+uvx --from git+https://github.com/oraios/serena serena-mcp-server --transport streamable-http --host 127.0.0.1 --port 12341
 ```
 
 **2. Gemini CLI** (`~/.gemini/settings.json`):
@@ -136,7 +137,7 @@ serena-mcp-server --port 12341
 {
   "mcpServers": {
     "serena": {
-      "url": "http://localhost:12341/sse"
+      "url": "http://localhost:12341/mcp"
     }
   }
 }
@@ -144,7 +145,7 @@ serena-mcp-server --port 12341
 
 **3. Antigravity IDE** — requires bridge:
 
-> **Important**: Antigravity IDE doesn't support SSE directly.
+> **Important**: Antigravity IDE doesn't support Streamable HTTP directly.
 > You need the `bridge` command to connect.
 
 **Configure** (`~/.gemini/antigravity/mcp_config.json`):
@@ -154,7 +155,7 @@ serena-mcp-server --port 12341
   "mcpServers": {
     "serena": {
       "command": "npx",
-      "args": ["-y", "oh-my-ag@latest", "bridge", "http://localhost:12341/sse"],
+      "args": ["-y", "oh-my-ag@latest", "bridge", "http://localhost:12341/mcp"],
       "disabled": false
     }
   }
@@ -164,8 +165,8 @@ serena-mcp-server --port 12341
 **Bridge Architecture:**
 
 ```
-┌─────────────────┐     stdio      ┌──────────────────┐     HTTP/SSE     ┌─────────────────┐
-│ Antigravity IDE │ ◄────────────► │  oh-my-ag bridge │ ◄──────────────► │ Serena SSE      │
+┌─────────────────┐     stdio      ┌──────────────────┐     HTTP(/mcp)    ┌─────────────────┐
+│ Antigravity IDE │ ◄────────────► │  oh-my-ag bridge │ ◄──────────────► │ Serena MCP      │
 └─────────────────┘                └──────────────────┘                  └─────────────────┘
                                                                           (localhost:12341)
 ```
@@ -175,7 +176,7 @@ serena-mcp-server --port 12341
 | Mode    | Memory Usage | Setup Complexity | Multiple Sessions |
 |---------|--------------|------------------|-------------------|
 | Command | Higher       | Simple           | Each has own process |
-| SSE     | Lower        | Requires server  | Share one server |
+| Streamable HTTP | Lower        | Requires server  | Share one server |
 
 ---
 
@@ -229,10 +230,10 @@ serena-mcp-server --port 12341
 - /coordinate: Interactive multi-agent coordination
 ```
 
-If Antigravity IDE with SSE mode:
+If Antigravity IDE with Streamable HTTP mode:
 
 ```
-💡 For Antigravity IDE (SSE mode):
-- Start Serena server: serena-mcp-server --port 12341
+💡 For Antigravity IDE (Streamable HTTP mode):
+- Start Serena server: uvx --from git+https://github.com/oraios/serena serena-mcp-server --transport streamable-http --host 127.0.0.1 --port 12341
 - Restart IDE to apply changes
 ```

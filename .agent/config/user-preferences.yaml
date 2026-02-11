@@ -15,10 +15,15 @@ timezone: Asia/Seoul
 default_cli: gemini
 
 # Per-agent CLI mapping (multi-CLI mode)
+# Core agents (AGENT_TYPES)
 agent_cli_mapping:
   frontend: gemini
-  backend: gemini
+  backend: codex
   mobile: gemini
-  qa: gemini
-  debug: gemini
-  pm: gemini
+  qa: claude
+  debug: codex
+  pm: claude
+  # Extended agents (EXTENDED_AGENTS)
+  orchestrator: gemini
+  workflow-guide: gemini
+  commit: gemini

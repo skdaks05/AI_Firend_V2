@@ -108,7 +108,10 @@ type DoctorOptions = {
   workspace?: string;
 };
 
-export async function doctor(jsonMode = false, options: DoctorOptions = {}): Promise<void> {
+export async function doctor(
+  jsonMode = false,
+  options: DoctorOptions = {},
+): Promise<void> {
   // --- verify-gate mode: delegates to runVerify, skips standard checks ---
   if (options.verifyGate) {
     if (!options.agent) {
@@ -125,8 +128,31 @@ export async function doctor(jsonMode = false, options: DoctorOptions = {}): Pro
     const outcome = runVerify(options.agent, workspace);
 
     if ("error" in outcome) {
+      // exit code 3 = aborted (Loop Guard) — distinct from general error/fail
+      if (outcome.exitCode === 3) {
+        if (jsonMode) {
+          console.log(
+            JSON.stringify({
+              ok: false,
+              mode: "verify-gate",
+              status: "aborted",
+              error: outcome.error,
+            }),
+          );
+        } else {
+          p.log.warn(`doctor verify-gate ABORTED: ${outcome.error}`);
+        }
+        process.exit(3);
+      }
+
       if (jsonMode) {
-        console.log(JSON.stringify({ ok: false, mode: "verify-gate", error: outcome.error }));
+        console.log(
+          JSON.stringify({
+            ok: false,
+            mode: "verify-gate",
+            error: outcome.error,
+          }),
+        );
       } else {
         p.log.error(outcome.error);
       }
@@ -136,13 +162,19 @@ export async function doctor(jsonMode = false, options: DoctorOptions = {}): Pro
     const { result } = outcome;
 
     if (jsonMode) {
-      console.log(JSON.stringify({
-        ok: result.ok,
-        mode: "verify-gate",
-        agent: result.agent,
-        workspace: result.workspace,
-        verify: result,
-      }, null, 2));
+      console.log(
+        JSON.stringify(
+          {
+            ok: result.ok,
+            mode: "verify-gate",
+            agent: result.agent,
+            workspace: result.workspace,
+            verify: result,
+          },
+          null,
+          2,
+        ),
+      );
     } else {
       const { passed, failed, warned } = result.summary;
       const summaryText = `${passed} passed, ${failed} failed, ${warned} warnings`;

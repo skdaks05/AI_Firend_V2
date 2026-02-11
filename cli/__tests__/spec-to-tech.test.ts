@@ -7,8 +7,8 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const TEST_DIR = join(tmpdir(), "hitl-spec-to-tech-test");
@@ -97,7 +97,13 @@ describe("spec:to-tech", () => {
   });
 
   it("2. Evidence pack has file_hashes + decisions version", () => {
-    const evidenceDir = join(TEST_DIR, ".serena", "evidence", "stt-run", "T-STT");
+    const evidenceDir = join(
+      TEST_DIR,
+      ".serena",
+      "evidence",
+      "stt-run",
+      "T-STT",
+    );
     expect(existsSync(evidenceDir)).toBe(true);
 
     const packYaml = readFileSync(
@@ -148,7 +154,7 @@ describe("spec:to-tech", () => {
     const originalContent = readFileSync(TEMPLATE_PATH, "utf-8");
     writeFileSync(
       TEMPLATE_PATH,
-      originalContent + "\n${EXTRA_UNKNOWN_TOKEN}\n",
+      `${originalContent}\n\${EXTRA_UNKNOWN_TOKEN}\n`,
       "utf-8",
     );
     try {
@@ -168,7 +174,11 @@ describe("spec:to-tech", () => {
     const dryRunDir = join(tmpdir(), "hitl-spec-to-tech-dryrun");
     rmSync(dryRunDir, { recursive: true, force: true });
     mkdirSync(dryRunDir, { recursive: true });
-    writeFileSync(join(dryRunDir, "SPEC.md"), "# Goal\nTest dry run.\n", "utf-8");
+    writeFileSync(
+      join(dryRunDir, "SPEC.md"),
+      "# Goal\nTest dry run.\n",
+      "utf-8",
+    );
 
     try {
       const { exitCode } = runSpecToTech(

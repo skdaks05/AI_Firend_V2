@@ -1,5 +1,6 @@
 import * as child_process from "node:child_process";
 import type * as fs from "node:fs";
+import path from "node:path";
 import {
   afterEach,
   beforeEach,
@@ -10,6 +11,9 @@ import {
   vi,
 } from "vitest";
 import { checkStatus, spawnAgent } from "../commands/agent.js";
+
+const MOCK_WORKSPACE = "/tmp";
+const RESOLVED_WORKSPACE = path.resolve(MOCK_WORKSPACE);
 
 // Hoist mocks to allow usage in vi.mock
 const mockFsFunctions = vi.hoisted(() => ({
@@ -52,12 +56,12 @@ describe("agent command", () => {
     it("should exit if spawn returns no pid", async () => {
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
-        if (target === "/tmp") return true;
+        if (target === RESOLVED_WORKSPACE) return true;
         return false;
       });
       mockFsFunctions.statSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
-        if (target === "/tmp")
+        if (target === RESOLVED_WORKSPACE)
           return { isDirectory: () => true, isFile: () => false };
         return { isDirectory: () => false, isFile: () => false };
       });
@@ -77,7 +81,7 @@ describe("agent command", () => {
         );
 
       await expect(
-        spawnAgent("agent1", "prompt.md", "session1", "/tmp"),
+        spawnAgent("agent1", "prompt.md", "session1", MOCK_WORKSPACE),
       ).rejects.toThrow("exit");
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
@@ -88,14 +92,14 @@ describe("agent command", () => {
         if (target.includes("user-preferences.yaml")) return false;
         if (target.includes("cli-config.yaml")) return false;
         if (target.includes("prompt.md")) return true;
-        if (target === "/tmp") return true;
+        if (target === RESOLVED_WORKSPACE) return true;
         return false;
       });
       mockFsFunctions.statSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
         if (target.includes("prompt.md"))
           return { isDirectory: () => false, isFile: () => true };
-        if (target === "/tmp")
+        if (target === RESOLVED_WORKSPACE)
           return { isDirectory: () => true, isFile: () => false };
         return { isDirectory: () => false, isFile: () => false };
       });
@@ -117,12 +121,12 @@ describe("agent command", () => {
         mockChild as unknown as child_process.ChildProcess,
       );
 
-      await spawnAgent("agent1", "prompt.md", "session1", "/tmp");
+      await spawnAgent("agent1", "prompt.md", "session1", MOCK_WORKSPACE);
 
       expect(child_process.spawn).toHaveBeenCalledWith(
         "gemini",
         expect.arrayContaining(["-p", "prompt content"]),
-        expect.objectContaining({ cwd: expect.stringContaining("/tmp") }),
+        expect.objectContaining({ cwd: RESOLVED_WORKSPACE }),
       );
       expect(mockFsFunctions.writeFileSync).toHaveBeenCalledWith(
         expect.stringContaining(".pid"),

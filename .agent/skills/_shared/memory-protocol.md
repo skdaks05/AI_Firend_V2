@@ -25,17 +25,34 @@ Memory base path is configurable via `memoryConfig.basePath` (default: `.serena/
 - Every 3-5 turns: `[EDIT]("progress-{agent-id}.md")` to append a new turn entry
 - Include: action taken, current status, files created/modified
 
+## Status Model (2-Axis)
+
+Result files use **TaskResult** (business outcome), not process-level status:
+
+- **TaskResult** (written to `## Status:` in result file):
+  - `completed` — task finished successfully
+  - `failed` — task finished with errors or non-zero exit
+  - `aborted` — task was terminated by Loop Guard (wall_time / retry exceeded)
+  - `pending` — task not yet started (evidence_pack initial state)
+
+- **ProcessStatus** (tracked via PID file, not written to result):
+  - `running` — process is alive (PID file exists, process responds)
+  - `exited` — process terminated normally
+  - `crashed` — process terminated abnormally without writing result
+
+> When a process crashes (ProcessStatus: `crashed`), the orchestrator writes TaskResult: `failed` on its behalf.
+
 ## On Completion
 
 - `[WRITE]("result-{agent-id}.md")` with final result including:
-  - Status: `completed` or `failed`
+  - Status: `completed` (TaskResult)
   - Summary of work done
   - Files created/modified
   - Acceptance criteria checklist
 
 ## On Failure
 
-- Still create `result-{agent-id}.md` with Status: `failed`
+- Still create `result-{agent-id}.md` with Status: `failed` (TaskResult)
 - Include detailed error description and what remains incomplete
 
 ---

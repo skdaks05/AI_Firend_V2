@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import {
@@ -124,20 +124,25 @@ export async function install(): Promise<void> {
     );
 
     // biome-ignore lint/suspicious/noExplicitAny: Config file is unstructured
-    let mcpConfig: any = null;
-    let configExists = false;
+    let mcpConfig: any = {};
 
     try {
       if (existsSync(mcpConfigPath)) {
         const content = readFileSync(mcpConfigPath, "utf-8");
         mcpConfig = JSON.parse(content);
-        configExists = true;
       }
     } catch (_e) {
       // Ignore errors, just assume config doesn't exist or is invalid
     }
 
-    if (configExists && mcpConfig && mcpConfig.mcpServers) {
+    if (!mcpConfig || typeof mcpConfig !== "object") {
+      mcpConfig = {};
+    }
+    if (!mcpConfig.mcpServers || typeof mcpConfig.mcpServers !== "object") {
+      mcpConfig.mcpServers = {};
+    }
+
+    if (mcpConfig?.mcpServers) {
       const serenaConfig = mcpConfig.mcpServers.serena;
       const bridgeCommand = "oh-my-ag@latest";
 
@@ -170,6 +175,7 @@ export async function install(): Promise<void> {
           };
 
           try {
+            mkdirSync(dirname(mcpConfigPath), { recursive: true });
             writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
             p.log.success(pc.green("Serena MCP configured successfully!"));
           } catch (err) {
@@ -182,23 +188,35 @@ export async function install(): Promise<void> {
     // --- Gemini CLI Configuration Setup ---
     const geminiConfigPath = join(homeDir, ".gemini", "settings.json");
     // biome-ignore lint/suspicious/noExplicitAny: Config file is unstructured
-    let geminiConfig: any = null;
-    let geminiConfigExists = false;
+    let geminiConfig: any = {};
 
     try {
       if (existsSync(geminiConfigPath)) {
         const content = readFileSync(geminiConfigPath, "utf-8");
         geminiConfig = JSON.parse(content);
-        geminiConfigExists = true;
       }
     } catch (_e) {
       // Ignore
     }
 
-    if (geminiConfigExists && geminiConfig && geminiConfig.mcpServers) {
+    if (!geminiConfig || typeof geminiConfig !== "object") {
+      geminiConfig = {};
+    }
+    if (
+      !geminiConfig.mcpServers ||
+      typeof geminiConfig.mcpServers !== "object"
+    ) {
+      geminiConfig.mcpServers = {};
+    }
+
+    if (geminiConfig?.mcpServers) {
       const serenaConfig = geminiConfig.mcpServers.serena;
       const isSerenaConfigured =
-        serenaConfig && serenaConfig.url === "http://localhost:12341/mcp";
+        !!serenaConfig &&
+        ((typeof serenaConfig.url === "string" &&
+          serenaConfig.url.length > 0) ||
+          (typeof serenaConfig.command === "string" &&
+            serenaConfig.command.length > 0));
 
       if (!isSerenaConfigured) {
         const shouldConfigureGemini = await p.confirm({
@@ -214,6 +232,7 @@ export async function install(): Promise<void> {
           };
 
           try {
+            mkdirSync(dirname(geminiConfigPath), { recursive: true });
             writeFileSync(
               geminiConfigPath,
               JSON.stringify(geminiConfig, null, 2),

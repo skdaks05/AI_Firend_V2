@@ -45,6 +45,7 @@ export async function initEvidence(
         `run_id: "${safeRunId}"`,
         `task_id: "${safeTaskId}"`,
         `timestamp_kst: "${timestampKst}"`,
+        `status: "pending"`,
         "",
         "artifacts:",
         "  paths: []",
@@ -78,7 +79,7 @@ export async function initEvidence(
     },
     {
       name: "approvals.json",
-      content: JSON.stringify(
+      content: `${JSON.stringify(
         {
           schema_version: "1",
           run_id: safeRunId,
@@ -95,7 +96,7 @@ export async function initEvidence(
         },
         null,
         2,
-      ) + "\n",
+      )}\n`,
     },
   ];
 

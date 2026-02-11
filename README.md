@@ -129,10 +129,10 @@ You'll also need at least one CLI tool:
 
 | CLI | Install | Auth |
 |-----|---------|------|
-| Gemini | `bun install --global @anthropic-ai/gemini-cli` | `gemini auth` |
-| Claude | `bun install --global @anthropic-ai/claude-code` | `claude auth` |
-| Codex | `bun install --global @openai/codex` | `codex auth` |
-| Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |
+| Gemini | `bun install --global @google/gemini-cli` | Run `gemini` (first-run sign-in) |
+| Claude | `bun install --global @anthropic-ai/claude-code` | Run `claude` (or `claude setup-token`) |
+| Codex | `bun install --global @openai/codex` | `codex login` |
+| Qwen | `bun install --global @qwen-code/qwen-code` | Run `qwen` (first-run sign-in) |
 
 ### Option 3: Integrate into Existing Project
 
@@ -344,16 +344,22 @@ Each skill provides domain-specific resources:
 
 ```bash
 bunx oh-my-ag                # Interactive skill installer
-bunx oh-my-ag bridge         # Bridge MCP stdio to SSE (for Serena)
+bunx oh-my-ag agent:spawn    # Spawn a subagent (inline text or file path)
+bunx oh-my-ag agent:status   # Check status of subagents
+bunx oh-my-ag bridge         # Bridge MCP stdio to Streamable HTTP (for Serena)
+bunx oh-my-ag cleanup        # Clean up orphaned subagent processes and temp files
 bunx oh-my-ag dashboard      # Terminal real-time dashboard
 bunx oh-my-ag dashboard:web  # Web dashboard (http://localhost:9847)
 bunx oh-my-ag doctor         # Check setup & repair missing skills
+bunx oh-my-ag evidence:init  # Initialize Evidence Pack skeleton
 bunx oh-my-ag help           # Show help
 bunx oh-my-ag memory:init    # Initialize Serena memory schema
 bunx oh-my-ag retro          # Session retrospective (learnings & next steps)
+bunx oh-my-ag spec:to-tech   # Generate TECH.md from SPEC.md with evidence pack
 bunx oh-my-ag stats          # View productivity metrics
 bunx oh-my-ag update         # Update skills to latest version
 bunx oh-my-ag usage          # Show model usage quotas
+bunx oh-my-ag verify         # Verify subagent output (with optional --refine)
 ```
 
 Troubleshooting and multi-repo registry docs are now in the web guide:

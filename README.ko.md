@@ -127,10 +127,10 @@ bun install --global oh-my-ag
 
 | CLI | 설치 | 인증 |
 |-----|------|------|
-| Gemini | `bun install --global @anthropic-ai/gemini-cli` | `gemini auth` |
-| Claude | `bun install --global @anthropic-ai/claude-code` | `claude auth` |
-| Codex | `bun install --global @openai/codex` | `codex auth` |
-| Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |
+| Gemini | `bun install --global @google/gemini-cli` | `gemini` 실행 (최초 1회 로그인) |
+| Claude | `bun install --global @anthropic-ai/claude-code` | `claude` 실행 (또는 `claude setup-token`) |
+| Codex | `bun install --global @openai/codex` | `codex login` |
+| Qwen | `bun install --global @qwen-code/qwen-code` | `qwen` 실행 (최초 1회 로그인) |
 
 ### 옵션 3: 기존 프로젝트에 통합하기
 
@@ -351,16 +351,22 @@ Orchestrator가 `.serena/memories/`에 구조화된 상태를 기록합니다:
 
 ```bash
 bunx oh-my-ag                # 대화형 스킬 설치
-bunx oh-my-ag bridge         # MCP stdio - SSE 브릿지 (Serena용)
+bunx oh-my-ag agent:spawn    # 서브에이전트 생성 (인라인 텍스트 또는 파일 경로)
+bunx oh-my-ag agent:status   # 서브에이전트 상태 확인
+bunx oh-my-ag bridge         # MCP stdio - Streamable HTTP 브릿지 (Serena용)
+bunx oh-my-ag cleanup        # 고아 서브에이전트 프로세스 및 임시 파일 정리
 bunx oh-my-ag dashboard      # 터미널 실시간 대시보드
 bunx oh-my-ag dashboard:web  # 웹 대시보드 (http://localhost:9847)
 bunx oh-my-ag doctor         # 설정 확인 & 누락된 스킬 보강
+bunx oh-my-ag evidence:init  # Evidence Pack 골격 초기화
 bunx oh-my-ag help           # 도움말 표시
 bunx oh-my-ag memory:init    # Serena 메모리 스키마 초기화
 bunx oh-my-ag retro          # 세션 회고 (배운 점 & 다음 단계)
+bunx oh-my-ag spec:to-tech   # SPEC.md에서 TECH.md 생성 (에비던스 팩 포함)
 bunx oh-my-ag stats          # 생산성 메트릭 조회
 bunx oh-my-ag update         # 스킬을 최신 버전으로 업데이트
 bunx oh-my-ag usage          # 모델 사용량 쿼터 조회
+bunx oh-my-ag verify         # 서브에이전트 출력 검증 (--refine 옵션 지원)
 ```
 
 문제 해결과 멀티-레포 중앙 레지스트리 문서는 웹 가이드로 이동했습니다:

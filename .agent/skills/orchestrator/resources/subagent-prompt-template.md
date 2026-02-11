@@ -96,6 +96,7 @@ Result format:
 ## Task: {TASK_ID}
 ## Status: completed
 ## Turns Used: {N}
+EVIDENCE_PATH: .serena/evidence/{run_id}/{task_id}/
 
 ## Summary
 {Brief summary of what was accomplished}
@@ -112,6 +113,7 @@ Result format:
 ## Notes
 {Any additional notes for the orchestrator or other agents}
 ```
+> **EVIDENCE_PATH is required for verify to pass.** The orchestrator checks this field to locate the evidence pack.
 
 ### On Failure
 If you cannot complete the task, still create the result file:

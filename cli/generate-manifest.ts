@@ -61,7 +61,7 @@ function getAllFiles(
       getAllFiles(fullPath, arrayOfFiles, relativePath);
     } else {
       arrayOfFiles.push({
-        path: relativePath,
+        path: relativePath.replace(/\\/g, "/"),
         fullPath: fullPath,
       });
     }

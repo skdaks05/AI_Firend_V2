@@ -15,6 +15,7 @@
     "web:lint": "bun run --cwd web lint"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.13"
+    "@biomejs/biome": "2.3.13",
+    "tsx": "^4.21.0"
   }
 }

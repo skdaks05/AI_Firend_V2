@@ -54,12 +54,21 @@ function extractSection(specContent: string, heading: string): string {
 function buildTechMd(specContent: string, template: string): string {
   let tech = template;
 
-  const goalSummary = extractSection(specContent, "(?:Goal|Summary|Overview|목표)");
+  const goalSummary = extractSection(
+    specContent,
+    "(?:Goal|Summary|Overview|목표)",
+  );
   const scopeIn = extractSection(specContent, "(?:In.Scope|Scope|범위)");
   const scopeOut = extractSection(specContent, "(?:Out.of.Scope|제외)");
-  const architecture = extractSection(specContent, "(?:Architecture|아키텍처|설계)");
+  const architecture = extractSection(
+    specContent,
+    "(?:Architecture|아키텍처|설계)",
+  );
   const risks = extractSection(specContent, "(?:Risk|위험|Approval)");
-  const verification = extractSection(specContent, "(?:Verification|검증|Test)");
+  const verification = extractSection(
+    specContent,
+    "(?:Verification|검증|Test)",
+  );
   const rollout = extractSection(specContent, "(?:Rollout|배포|Deploy)");
 
   tech = tech.replace("${GOAL_SUMMARY}", goalSummary);
@@ -212,25 +221,24 @@ export async function specToTech(
     },
     {
       name: "approvals.json",
-      content:
-        JSON.stringify(
-          {
-            schema_version: "1",
-            run_id: runId,
-            task_id: taskId,
-            status: "PENDING",
-            requested_by: "agent",
-            requested_at: timestampKst,
-            decision: { by: null, at: null, reason: null },
-            scope: {
-              risk_level: "LOW",
-              actions: ["spec-to-tech"],
-              targets: [`.serena/evidence/${runId}/${taskId}/`],
-            },
+      content: `${JSON.stringify(
+        {
+          schema_version: "1",
+          run_id: runId,
+          task_id: taskId,
+          status: "PENDING",
+          requested_by: "agent",
+          requested_at: timestampKst,
+          decision: { by: null, at: null, reason: null },
+          scope: {
+            risk_level: "LOW",
+            actions: ["spec-to-tech"],
+            targets: [`.serena/evidence/${runId}/${taskId}/`],
           },
-          null,
-          2,
-        ) + "\n",
+        },
+        null,
+        2,
+      )}\n`,
     },
   ];
 

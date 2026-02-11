@@ -408,6 +408,14 @@ function checkPmPlan(workspace: string): VerifyCheck {
 
 const EVIDENCE_PATH_PATTERN = /^\.serena\/evidence\/[^/]+\/[^/]+\/?$/;
 
+function parseEvidencePathIds(
+  evidencePath: string,
+): { runId: string; taskId: string } | null {
+  const match = evidencePath.match(/^\.serena\/evidence\/([^/]+)\/([^/]+)\/?$/);
+  if (!match?.[1] || !match[2]) return null;
+  return { runId: match[1], taskId: match[2] };
+}
+
 function checkEvidencePack(
   workspace: string,
   agentType: AgentType,
@@ -464,7 +472,17 @@ function checkEvidencePack(
 
   for (const file of requiredFiles) {
     if (!existsSync(join(evidenceDir, file))) {
-      checks.push(createCheck("Evidence Files", "fail", `Missing: ${file}`));
+      if (file === "evidence_pack.yaml") {
+        const ids = parseEvidencePathIds(evidencePath);
+        const hint = ids
+          ? ` Run: oh-my-ag evidence:init ${ids.runId} ${ids.taskId} -w "${workspace}"`
+          : "";
+        checks.push(
+          createCheck("Evidence Files", "fail", `Missing: ${file}.${hint}`),
+        );
+      } else {
+        checks.push(createCheck("Evidence Files", "fail", `Missing: ${file}`));
+      }
       return checks;
     }
   }

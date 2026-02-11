@@ -189,10 +189,12 @@ program
 program
   .command("evidence:init <run-id> <task-id>")
   .description("Initialize Evidence Pack skeleton in .serena/evidence")
+  .option("-w, --workspace <path>", "Workspace path", process.cwd())
   .option("--dry-run", "Show what would be created without writing files")
   .option("--force", "Overwrite existing evidence directory")
   .action((runId, taskId, options) => {
     initEvidence(runId, taskId, {
+      workspace: options.workspace,
       dryRun: options.dryRun,
       force: options.force,
     }).catch(console.error);

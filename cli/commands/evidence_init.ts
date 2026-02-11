@@ -6,6 +6,7 @@ import pc from "picocolors";
 type InitOptions = {
   dryRun?: boolean;
   force?: boolean;
+  workspace?: string;
 };
 
 function formatKstIso(date: Date): string {
@@ -26,8 +27,14 @@ export async function initEvidence(
     process.exit(2);
   }
 
-  const cwd = process.cwd();
-  const evidenceDir = join(cwd, ".serena", "evidence", safeRunId, safeTaskId);
+  const workspace = (options.workspace || process.cwd()).trim();
+  const evidenceDir = join(
+    workspace,
+    ".serena",
+    "evidence",
+    safeRunId,
+    safeTaskId,
+  );
 
   if (existsSync(evidenceDir) && !options.force) {
     p.log.error(

@@ -214,15 +214,19 @@ function checkTodoComments(workspace: string): VerifyCheck {
 }
 
 function checkPythonSyntax(workspace: string): VerifyCheck {
-  const hasUv = runCommand("which uv", workspace);
+  // Use cross-platform command to detect uv
+  const whichCmd = process.platform === "win32" ? "where uv" : "which uv";
+  const hasUv = runCommand(whichCmd, workspace);
   if (!hasUv) {
     return createCheck("Python Syntax", "skip", "uv not available");
   }
 
-  const result = runCommand(
-    `find . -name "*.py" -not -path "*/node_modules/*" -not -path "*/.venv/*" -exec uv run python -m py_compile {} \\; 2>&1 | head -5`,
-    workspace,
-  );
+  // Use cross-platform glob via uv itself instead of Unix find
+  const findCmd =
+    process.platform === "win32"
+      ? `powershell -Command "Get-ChildItem -Recurse -Filter *.py -Exclude node_modules,.venv | Select-Object -First 20 -ExpandProperty FullName | ForEach-Object { uv run python -m py_compile $_ 2>&1 }"`
+      : `find . -name "*.py" -not -path "*/node_modules/*" -not -path "*/.venv/*" -exec uv run python -m py_compile {} \\; 2>&1 | head -5`;
+  const result = runCommand(findCmd, workspace);
 
   if (result && result.length > 0) {
     return createCheck("Python Syntax", "fail", "Syntax errors found");

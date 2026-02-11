@@ -187,6 +187,22 @@ function parseCliConfig(content: string): CliConfig {
   return result.data;
 }
 
+/**
+ * Walk up from `startDir` looking for the `.agent/` directory marker.
+ * Returns the directory that contains `.agent/`, or `startDir` as fallback.
+ */
+function findProjectRoot(startDir: string): string {
+  let dir = path.resolve(startDir);
+  const { root } = path.parse(dir);
+  while (dir !== root) {
+    if (fs.existsSync(path.join(dir, ".agent"))) return dir;
+    dir = path.dirname(dir);
+  }
+  // Last check at filesystem root
+  if (fs.existsSync(path.join(dir, ".agent"))) return dir;
+  return path.resolve(startDir);
+}
+
 function readUserPreferences(cwd: string): UserPreferences | null {
   const configPath = path.join(
     cwd,
@@ -225,9 +241,15 @@ function resolveVendor(
   agentId: string,
   vendorOverride?: string,
 ): { vendor: string; config: CliConfig | null } {
-  const cwd = process.cwd();
-  const userPrefs = readUserPreferences(cwd);
-  const cliConfig = readCliConfig(cwd);
+  const projectRoot = findProjectRoot(process.cwd());
+  const userPrefs = readUserPreferences(projectRoot);
+  const cliConfig = readCliConfig(projectRoot);
+
+  if (!cliConfig) {
+    console.warn(
+      `[warn] cli-config.yaml not found (searched upward from ${process.cwd()})`,
+    );
+  }
 
   const normalizedAgentId = agentId.replace(/-agent$/i, "");
   const mappedVendor =
@@ -783,13 +805,20 @@ export async function spawnAgent(
   }
 
   // Spawn selected CLI via process wrapper (isolates Bun/@types/node conflicts)
-  const child = spawnVendor(command, args, {
-    cwd: resolvedWorkspace,
-    stdio: ["ignore", logStream, logStream],
-    detached: false,
-    env,
-    shell: process.platform === "win32" && vendor !== "codex",
-  });
+  let child: ReturnType<typeof spawnVendor>;
+  try {
+    child = spawnVendor(command, args, {
+      cwd: resolvedWorkspace,
+      stdio: ["ignore", logStream, logStream],
+      detached: false,
+      env,
+      shell: process.platform === "win32" && vendor !== "codex",
+    });
+  } finally {
+    // Close parent's copy of the log fd — child already has its own via dup2.
+    // Must run even if spawnVendor throws (e.g. ENOENT) to prevent fd leak.
+    fs.closeSync(logStream);
+  }
 
   if (!child.pid) {
     console.error(color.red(`[${agentId}] Failed to spawn process`));
@@ -857,14 +886,15 @@ export async function spawnAgent(
       : code === 0
         ? "completed"
         : "failed";
+    const resultRoot = findProjectRoot(process.cwd());
     const resultFile = path.join(
-      process.cwd(),
+      resultRoot,
       ".serena",
       "memories",
       `result-${agentId}.md`,
     );
     const historyFile = path.join(
-      process.cwd(),
+      resultRoot,
       ".serena",
       "memories",
       `result-${agentId}.history.md`,
@@ -899,7 +929,7 @@ export async function spawnAgent(
 export async function checkStatus(
   sessionId: string,
   agentIds: string[],
-  rootPath: string = process.cwd(),
+  rootPath: string = findProjectRoot(process.cwd()),
 ) {
   const results: Record<string, string> = {};
 

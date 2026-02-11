@@ -52,6 +52,7 @@ coverage/
 
 # OS
 Thumbs.db
+nul
 
 # Python
 __pycache__/

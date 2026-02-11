@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.16.1](https://github.com/first-fluke/oh-my-ag/compare/cli-v1.16.0...cli-v1.16.1) (2026-02-11)
+
+### Fixes
+
+* fix `agent:spawn` project-root resolution when invoked from nested CWD (`--cwd cli`)
+* unify result/history/checkStatus paths to repository root `.serena/memories`
+* prevent log file descriptor leak in spawn path via `try/finally` close
+* fix `verify` Python syntax check for Windows (`where` + PowerShell file discovery)
+* remove temporary debug logs from release code paths
+
 ## [1.16.0](https://github.com/first-fluke/oh-my-ag/compare/cli-v1.15.0...cli-v1.16.0) (2026-02-11)
 
 

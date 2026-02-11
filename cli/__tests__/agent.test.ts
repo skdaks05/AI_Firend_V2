@@ -22,6 +22,7 @@ const mockFsFunctions = vi.hoisted(() => ({
   writeFileSync: vi.fn(),
   unlinkSync: vi.fn(),
   openSync: vi.fn(),
+  closeSync: vi.fn(),
   statSync: vi.fn(),
   mkdirSync: vi.fn(),
   readdirSync: vi.fn(),

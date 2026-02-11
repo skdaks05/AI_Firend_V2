@@ -159,8 +159,8 @@ program
     "-w, --workspace <path>",
     "Working directory for the agent (auto-detected if omitted)",
   )
-  .action((agentId, prompt, sessionId, options) => {
-    spawnAgent(
+  .action(async (agentId, prompt, sessionId, options) => {
+    await spawnAgent(
       agentId,
       prompt,
       sessionId,

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.2](https://github.com/first-fluke/oh-my-ag/compare/cli-v1.16.1...cli-v1.16.2) (2026-02-11)
+
+### Fixes
+
+* prevent listener accumulation in `bridge` and `agent:spawn` signal handling
+* add regression test for nested CWD root/config/result resolution
+* add result post-processing policy to preserve `EVIDENCE_PATH` from prompt when missing in vendor output
+
 ## [1.16.1](https://github.com/first-fluke/oh-my-ag/compare/cli-v1.16.0...cli-v1.16.1) (2026-02-11)
 
 ### Fixes

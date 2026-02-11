@@ -134,6 +134,111 @@ describe("agent command", () => {
         "12345",
       );
     });
+
+    it("should resolve config/result paths from project root when cwd is nested", async () => {
+      const nestedCwd = "C:\\repo\\cli";
+      const projectRoot = "C:\\repo";
+      const rootMarker = path.join(projectRoot, ".agent");
+      const cliConfigPath = path.join(
+        projectRoot,
+        ".agent",
+        "skills",
+        "orchestrator",
+        "config",
+        "cli-config.yaml",
+      );
+
+      const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue(nestedCwd);
+
+      mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target === rootMarker) return true;
+        if (target === cliConfigPath) return true;
+        if (target === RESOLVED_WORKSPACE) return true;
+        return false;
+      });
+      mockFsFunctions.readFileSync.mockImplementation(
+        (pathArg: fs.PathLike) => {
+          const target = pathArg.toString();
+          if (target === cliConfigPath) {
+            return [
+              "active_vendor: gemini",
+              "vendors:",
+              "  gemini:",
+              '    command: "gemini"',
+              '    prompt_flag: "none"',
+              '    auto_approve_flag: "--approval-mode=yolo"',
+              '    output_format_flag: "--output-format"',
+              '    output_format: "json"',
+            ].join("\n");
+          }
+          return "";
+        },
+      );
+      mockFsFunctions.openSync.mockReturnValue(123);
+
+      let exitHandler: ((code: number | null) => void) | undefined;
+      const mockChild = {
+        pid: 54321,
+        on: vi.fn((event: string, cb: (arg: unknown) => void) => {
+          if (event === "exit") {
+            exitHandler = cb as (code: number | null) => void;
+          }
+          return mockChild;
+        }),
+        kill: vi.fn(),
+      };
+      vi.mocked(child_process.spawn).mockReturnValue(
+        mockChild as unknown as child_process.ChildProcess,
+      );
+
+      const exitSpy = vi
+        .spyOn(process, "exit")
+        .mockImplementation(
+          (_code?: string | number | null | undefined): never => {
+            throw new Error("exit");
+          },
+        );
+
+      const promptWithEvidence = [
+        "inline prompt",
+        "EVIDENCE_PATH: .serena/evidence/run-123/task-456/",
+      ].join("\n");
+
+      await spawnAgent("backend", promptWithEvidence, "session2", MOCK_WORKSPACE);
+      expect(exitHandler).toBeDefined();
+
+      // Trigger child completion path to verify result file destination.
+      expect(() => exitHandler?.(0)).toThrow("exit");
+
+      const spawnArgs = vi.mocked(child_process.spawn).mock.calls[0]?.[1] as
+        | string[]
+        | undefined;
+      expect(spawnArgs).toBeDefined();
+      expect(spawnArgs?.includes("-p")).toBe(false);
+      expect(spawnArgs).toEqual(
+        expect.arrayContaining([
+          "--output-format",
+          "json",
+          "--approval-mode=yolo",
+          promptWithEvidence,
+        ]),
+      );
+
+      const resultWriteCall = mockFsFunctions.writeFileSync.mock.calls.find(
+        (call) => call[0].toString().includes("result-backend.md"),
+      );
+      expect(resultWriteCall).toBeDefined();
+      expect(resultWriteCall?.[0].toString()).toBe(
+        path.join(projectRoot, ".serena", "memories", "result-backend.md"),
+      );
+      expect(resultWriteCall?.[1].toString()).toContain(
+        "EVIDENCE_PATH: .serena/evidence/run-123/task-456/",
+      );
+
+      expect(exitSpy).toHaveBeenCalledWith(0);
+      cwdSpy.mockRestore();
+    });
   });
 
   describe("checkStatus", () => {

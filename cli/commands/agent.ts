@@ -599,6 +599,27 @@ function resolvePromptContent(prompt: string): string {
   return prompt;
 }
 
+function extractEvidencePath(content: string): string | null {
+  const match = content.match(/^EVIDENCE_PATH:\s*(.+)$/m);
+  return match?.[1]?.trim() || null;
+}
+
+function ensureEvidencePathInResult(
+  result: string,
+  promptContent: string,
+): string {
+  if (extractEvidencePath(result)) {
+    return result;
+  }
+
+  const fromPrompt = extractEvidencePath(promptContent);
+  if (!fromPrompt) {
+    return result;
+  }
+
+  return `EVIDENCE_PATH: ${fromPrompt}\n\n${result}`;
+}
+
 // ============================================================================
 // Vendor-specific log parsers (adapter pattern)
 // Each parser extracts the final response from a JSON log line.
@@ -856,6 +877,7 @@ export async function spawnAgent(
 
   // Handle signals to kill child
   const cleanAndExit = () => {
+    removeSignalHandlers();
     if (child.pid && isProcessRunning(child.pid)) {
       process.kill(child.pid);
     }
@@ -863,12 +885,20 @@ export async function spawnAgent(
     process.exit();
   };
 
-  process.on("SIGINT", cleanAndExit);
-  process.on("SIGTERM", cleanAndExit);
+  const onSigInt = () => cleanAndExit();
+  const onSigTerm = () => cleanAndExit();
+  const removeSignalHandlers = () => {
+    process.off("SIGINT", onSigInt);
+    process.off("SIGTERM", onSigTerm);
+  };
+
+  process.on("SIGINT", onSigInt);
+  process.on("SIGTERM", onSigTerm);
 
   // Handle spawn errors (e.g. ENOENT when command not found)
   child.on("error", (err: Error) => {
     console.error(color.red(`[${agentId}] Spawn error: ${err.message}`));
+    removeSignalHandlers();
     cleanup();
     process.exit(1);
   });
@@ -880,7 +910,8 @@ export async function spawnAgent(
     console.log(color.blue(`[${agentId}] Exited with code ${code}`));
 
     // Capture and save result
-    const result = extractResultFromLog(logFile, vendorConfig.output_parser);
+    const parsedResult = extractResultFromLog(logFile, vendorConfig.output_parser);
+    const result = ensureEvidencePathInResult(parsedResult, promptContent);
     const status = wallTimeAborted
       ? "aborted"
       : code === 0
@@ -921,6 +952,7 @@ export async function spawnAgent(
     fs.writeFileSync(resultFile, markdownContent);
     console.log(color.green(`[${agentId}] Result saved to ${resultFile}`));
 
+    removeSignalHandlers();
     cleanup();
     process.exit(wallTimeAborted ? 1 : (code ?? 0));
   });

@@ -16,6 +16,10 @@ const STARTUP_TIMEOUT_MS = Number.parseInt(
   10,
 );
 
+let activeStdinDataHandler: ((chunk: string | Buffer) => void) | null = null;
+let activeSigIntHandler: (() => void) | null = null;
+let activeSigTermHandler: (() => void) | null = null;
+
 export function validateSerenaConfigs(): void {
   const globalConfigPath = join(homedir(), ".serena", "serena_config.yml");
 
@@ -330,8 +334,22 @@ export async function bridge(mcpUrlArg?: string) {
   let initializePending = false;
   const pendingMessages: string[] = [];
 
+  // Ensure repeated bridge() calls in the same process do not accumulate listeners.
+  if (activeStdinDataHandler) {
+    process.stdin.off("data", activeStdinDataHandler);
+    activeStdinDataHandler = null;
+  }
+  if (activeSigIntHandler) {
+    process.off("SIGINT", activeSigIntHandler);
+    activeSigIntHandler = null;
+  }
+  if (activeSigTermHandler) {
+    process.off("SIGTERM", activeSigTermHandler);
+    activeSigTermHandler = null;
+  }
+
   process.stdin.setEncoding("utf8");
-  process.stdin.on("data", (chunk) => {
+  const onStdinData = (chunk: string | Buffer) => {
     stdinBuffer += chunk.toString();
 
     const lines = stdinBuffer.split("\n");
@@ -342,7 +360,9 @@ export async function bridge(mcpUrlArg?: string) {
         enqueueMessage(line.trim());
       }
     }
-  });
+  };
+  process.stdin.on("data", onStdinData);
+  activeStdinDataHandler = onStdinData;
 
   function enqueueMessage(message: string) {
     if (initializePending) {
@@ -435,6 +455,19 @@ export async function bridge(mcpUrlArg?: string) {
   process.stdin.resume();
 
   const cleanup = () => {
+    if (activeStdinDataHandler) {
+      process.stdin.off("data", activeStdinDataHandler);
+      activeStdinDataHandler = null;
+    }
+    if (activeSigIntHandler) {
+      process.off("SIGINT", activeSigIntHandler);
+      activeSigIntHandler = null;
+    }
+    if (activeSigTermHandler) {
+      process.off("SIGTERM", activeSigTermHandler);
+      activeSigTermHandler = null;
+    }
+
     isShuttingDown = true;
     if (serenaProcess) {
       console.error("Stopping Serena server...");
@@ -445,4 +478,6 @@ export async function bridge(mcpUrlArg?: string) {
 
   process.on("SIGINT", cleanup);
   process.on("SIGTERM", cleanup);
+  activeSigIntHandler = cleanup;
+  activeSigTermHandler = cleanup;
 }
